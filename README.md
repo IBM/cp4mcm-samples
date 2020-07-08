@@ -12,40 +12,11 @@ The purpose of this project is to provide sample files and code snippets for IBM
 <!-- A more detailed Usage or detailed explaination of the repository here -->
 ## Usage
 
-Basically, users are directed to this repo from the [IBM Cloud Pak for Multicloud Management Knowledge Center](https://www.ibm.com/support/knowledgecenter/SSFC4F_2.0.0/kc_welcome_cloud_pak.html). In the IBM Knowledge Center topics, if there is a link to download the sample yaml files or script files, by clicking the link, users open the specific file url. Then, users can download the file to local for direct use. 
+Basically, users are directed to this repo from the [IBM Cloud Pak for Multicloud Management Knowledge Center](https://www.ibm.com/support/knowledgecenter/SSFC4F_2.0.0/kc_welcome_cloud_pak.html).  
 
+In the IBM Knowledge Center topics, if the sample yaml file or script file is very long, we will not directly paste the content in the Knowledge Center page. Instead, we will upload the sample files in this repo, and then add a link in the Knowledge Center topic. By clicking the link, users open the specific file url and can then download the file to local for direct use.  
 
-
-* [LICENSE](LICENSE)
-* [README.md](README.md)
-* [CONTRIBUTING.md](CONTRIBUTING.md)
-* [MAINTAINERS.md](MAINTAINERS.md)
-<!-- A Changelog allows you to track major changes and things that happen, https://github.com/github-changelog-generator/github-changelog-generator can help automate the process -->
-* [CHANGELOG.md](CHANGELOG.md)
-
-> These are optional
-
-<!-- The following are OPTIONAL, but strongly suggested to have in your repository. -->
-* [dco.yml](.github/dco.yml) - This enables DCO bot for you, please take a look https://github.com/probot/dco for more details.
-* [travis.yml](.travis.yml) - This is a example `.travis.yml`, please take a look https://docs.travis-ci.com/user/tutorial/ for more details.
-
-These may be copied into a new or existing project to make it easier for developers not on a project team to collaborate.
-
-<!-- A notes section is useful for anything that isn't covered in the Usage or Scope. Like what we have below. -->
-## Notes
-
-**NOTE: While this boilerplate project uses the Apache 2.0 license, when
-establishing a new repo using this template, please use the
-license that was approved for your project.**
-
-**NOTE: This repository has been configured with the [DCO bot](https://github.com/probot/dco).
-When you set up a new repository that uses the Apache license, you should
-use the DCO to manage contributions. The DCO bot will help enforce that.
-Please contact one of the IBM GH Org stewards.**
-
-<!-- Questions can be useful but optional, this gives you a place to say, "This is how to contact this project maintainers or create PRs -->
-If you have any questions or issues you can create a new [issue here][issues].
-
+## Contributing
 Pull requests are very welcome! Make sure your patches are well tested.
 Ideally create a topic branch for every separate change you make. For
 example:
@@ -56,7 +27,6 @@ example:
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
-<!-- License and Authors is optional here, but gives you the ability to highlight who is involed in the project -->
 ## License & Authors
 
 If you would like to see the detailed LICENSE click [here](LICENSE).
