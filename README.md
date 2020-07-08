@@ -12,7 +12,9 @@ The purpose of this project is to provide sample files and code snippets for IBM
 <!-- A more detailed Usage or detailed explaination of the repository here -->
 ## Usage
 
-This repository contains some example best practices for open source repositories:
+Basically, users are directed to this repo from the [IBM Cloud Pak for Multicloud Management Knowledge Center](https://www.ibm.com/support/knowledgecenter/SSFC4F_2.0.0/kc_welcome_cloud_pak.html). In the IBM Knowledge Center topics, if there is a link to download the sample yaml files or script files, by clicking the link, users open the specific file url. Then, users can download the file to local for direct use. 
+
+
 
 * [LICENSE](LICENSE)
 * [README.md](README.md)
