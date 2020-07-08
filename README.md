@@ -7,19 +7,17 @@
 <!-- Not always needed, but a scope helps the user understand in a short sentance like below, why this repo exists -->
 ## Scope
 
-The purpose of this project is to provide sample files and code snippets for IBM Cloud Pak for Multicloud Management, for example, configuration yaml files, script sample files, and so on. Users can directly download these files for installing or configuring IBM Cloud Pak for Multicloud Management.
+The purpose of this project is to provide sample files and code snippets for IBM Cloud Pak for Multicloud Management; for example, configuration yaml files, script sample files, and so on. You can directly download these files for either installing or configuring IBM Cloud Pak for Multicloud Management.
 
 <!-- A more detailed Usage or detailed explaination of the repository here -->
 ## Usage
 
-Basically, users are directed to this repo from the [IBM Cloud Pak for Multicloud Management Knowledge Center](https://www.ibm.com/support/knowledgecenter/SSFC4F_2.0.0/kc_welcome_cloud_pak.html).  
+To understand and use the IBM Cloud Pak for Multicloud Management, see the [documentation](https://www.ibm.com/support/knowledgecenter/SSFC4F/product_welcome_cloud_pak.html) and select the appropriate version.  
 
-In the IBM Knowledge Center topics, if the sample yaml file or script file is very long, we will not directly paste the content in the Knowledge Center page. Instead, we will upload the sample files in this repo, and then add a link in the Knowledge Center topic. By clicking the link, users open the specific file url and can then download the file to local for direct use.  
+In the documentation, if the sample yaml file or script file is long, it is not included in the content. Instead, it is available inside this repo and linked to from the topic. By clicking the link in the topic, you open the specific file url and can then download the file to your local directory for direct use.  
 
 ## Contributing
-Pull requests are very welcome! Make sure your patches are well tested.
-Ideally create a topic branch for every separate change you make. For
-example:
+Pull requests are very welcome! Make sure that your patches are tested. Ideally create a topic branch for every separate change you make. For example:
 
 1. Fork the repo
 2. Create your feature branch (`git checkout -b my-new-feature`)
