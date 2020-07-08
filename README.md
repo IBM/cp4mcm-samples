@@ -27,6 +27,8 @@ example:
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
+**Note:** Make sure you update the [Changelog](CHANGELOG.md) each time you add, remove, or update sample files.
+
 ## License & Authors
 
 If you would like to see the detailed LICENSE click [here](LICENSE).
