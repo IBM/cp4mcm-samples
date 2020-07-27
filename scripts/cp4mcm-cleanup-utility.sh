@@ -694,8 +694,9 @@ removeMisc() {
     deleteResource "OperandConfig" "${ibmManagementOpConfNS}" "ibm-management"
     result=$(( result + $? ))
 
-    csSubNS=`$ocOrKubectl get subscription.operators.coreos.com --all-namespaces=true | grep "ibm-common-service" | awk '{ print $1 }'`
-    deleteResource "subscription.operators.coreos.com" "${csSubNS}" "ibm-common-service-operator-beta-opencloud-operators-openshift-marketplace"
+    csSubNS=`$ocOrKubectl get subscription.operators.coreos.com --all-namespaces=true | grep "ibm-common-service-operator" | awk '{ print $1 }'`
+    csSub=`$ocOrKubectl get subscription.operators.coreos.com --all-namespaces=true | grep "ibm-common-service-operator" | awk '{ print $2 }'`
+    deleteResource "subscription.operators.coreos.com" "${csSubNS}" "${csSub}"
     local result=$?
 
     comServCSV=`$ocOrKubectl get csv -n openshift-operators | grep ibm-common-service-operator | awk '{ print $1 }'`
