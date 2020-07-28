@@ -3,7 +3,7 @@
 # Dependencies:
 # 1. bash
 # 2. oc or kubectl
-# 3. an openshift cluster on which cp4mcm is currently installed
+# 3. an OpenShift cluster on which IBM Cloud Pak for Multicloud Management is installed
 
 # exit on failures
 #set -e
@@ -25,26 +25,24 @@ CALLER=$_
 timestamp=`date +%Y%m%d%H%M`
 logs="cp4mcm-enable-ha-logs."
 logpath="/tmp/$logs$timestamp.txt"
+pathToKubeconfig="$HOME/.kube/config"
 ocOrKubectl=""
 
 helpFunc() {
     echo "Usage $0"
-    echo "Use this script to enable HA for the CloudPak for Multicloud Management"
+    echo "Use this script to enable HA for IBM Cloud Pak for Multicloud Management"
     echo
     echo "  *Flags:"
     echo 
     echo "     --kubeconfigPath                 The absolute path to the kubeconfig file to access the cluster"
+    echo "     --help                           Print the help information"
     echo
     exit 0
 }
 
 parse_args() {
     ARGC=$#
-    if [ $ARGC == 0 ] ; then
-        helpFunc
-        exit
-    fi
-    while [ $ARGC != 0 ] ; do
+    while [ $ARGC -gt 0 ] ; do
       if [ "$1" == "-n" ] || [ "$1" == "-N" ] ; then
           ARG="-N"
       else
@@ -87,7 +85,6 @@ checkKubeconfig() {
     return 0
 }
 
-
 checkIfocANDORkubectlInstalled() {
     which oc > /dev/null 2>&1
     local result1=$?
@@ -111,11 +108,10 @@ checkIfocANDORkubectlInstalled() {
     fi
 }
 
-
 validate(){
     checkIfocANDORkubectlInstalled
     checkKubeconfig
-    echo "validation of parameters and environment complete" | tee -a "$logpath"
+    echo "Validation of parameters and environment complete" | tee -a "$logpath"
     echo "" | tee -a "$logpath"
     return 0
 }
@@ -125,7 +121,8 @@ validate(){
 # begin core stuff
 
 enableHA(){
-  :
+  echo "Start to enable HA for each component in IBM Cloud Pak for Multicloud Management..." | tee -a "$logpath"
+  echo "" | tee -a "$logpath"
 }
 
 # end core stuff
