@@ -27,6 +27,8 @@ logs="cp4mcm-enable-ha-logs."
 logpath="/tmp/$logs$timestamp.txt"
 pathToKubeconfig="$HOME/.kube/config"
 ocOrKubectl=""
+mcmcoreReplicas=3
+defaultReplicas=2
 
 helpFunc() {
     echo "Usage $0"
@@ -120,9 +122,64 @@ validate(){
 
 # begin core stuff
 
+enableHAForMCMCore() {
+    local ns="kube-system"
+
+    echo "Attempting to enable HA for ibm-management-mcm" | tee -a "$logpath"
+
+    # MCM Core
+    local cr=$(ocOrKubectl get mcmcores.management.ibm.com -n $ns -o name)
+    ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"global": {"replicas": '$mcmcoreReplicas'}}}'
+
+    # KUI
+    cr=$(ocOrKubectl get kuis.management.ibm.com -n $ns -o name)
+    ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"global": {"replicas": '$mcmcoreReplicas'}}}'
+}
+
+enableHAForKong() {
+    local ns="kube-system"
+
+    echo "Attempting to enable HA for ibm-management-kong" | tee -a "$logpath"
+
+    # Kong
+    local cr=$(ocOrKubectl get kongs.management.ibm.com -n $ns -o name)
+    ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"replicas": '$defaultReplicas'}}'
+}
+
+enableHAForServiceLibrary() {
+    local ns="management-infrastructure-management"
+
+    echo "Attempting to enable HA for ibm-management-service-library" | tee -a "$logpath"
+
+    # Service Library UI
+    local cr=$(ocOrKubectl get servicelibraryuis.servicelibraryui.management.ibm.com -n $ns -o name)
+    ocOrKubectl patch $cr -n $ns  --type='json' -p '[{"op": "replace", "path": "/spec/deployment/spec/replicas", "value": '$defaultReplicas'}]'
+
+    # Service Library UI API
+    cr=$(ocOrKubectl get servicelibraryuiapis.servicelibraryuiapi.management.ibm.com -n $ns -o name)
+    ocOrKubectl patch $cr -n $ns  --type='json' -p '[{"op": "replace", "path": "/spec/deployment/spec/replicas", "value": '$defaultReplicas'}]'
+}
+
+enableHAForCAM() {
+    local ns="management-infrastructure-management"
+
+    echo "Attempting to enable HA for ibm-management-cam-install" | tee -a "$logpath"
+
+    # Manage Service
+    local cr=$(ocOrKubectl get manageservices.cam.management.ibm.com -n $ns -o name)
+    ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec": {"camController": {"replicaCount": '$defaultReplicas'}}}'
+}
+
 enableHA(){
-  echo "Start to enable HA for each component in IBM Cloud Pak for Multicloud Management..." | tee -a "$logpath"
-  echo "" | tee -a "$logpath"
+    echo "Start to enable HA for each component in IBM Cloud Pak for Multicloud Management..." | tee -a "$logpath"
+    echo "" | tee -a "$logpath"
+
+    enableHAForMCMCore
+    enableHAForKong
+    enableHAForServiceLibrary
+    enableHAForCAM
+    
+    echo "Successfully enabled HA for all components in IBM Cloud Pak for Multicloud Management that support HA." | tee -a "$logpath"
 }
 
 # end core stuff
