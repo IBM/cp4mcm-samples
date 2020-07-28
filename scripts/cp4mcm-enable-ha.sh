@@ -134,15 +134,15 @@ enableHAForMCMCore() {
     echo "Cannot find clusterserviceversion for ibm-management-mcm, skip" | tee -a "$logpath"
 
     # MCM Core
-    local cr=$($ocOrKubectl get mcmcores.management.ibm.com -n $ns -o name)
+    local cr=$($ocOrKubectl get mcmcores.management.ibm.com -n $ns -o name 2>/dev/null)
     [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"global": {"replicas": '$mcmcoreReplicas'}}}' ||
+    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"global":{"replicas":'$mcmcoreReplicas'}}}' ||
     echo "Cannot find custom resource for mcmcores.management.ibm.com, skip" | tee -a "$logpath"
 
     # KUI
-    cr=$($ocOrKubectl get kuis.management.ibm.com -n $ns -o name)
+    cr=$($ocOrKubectl get kuis.management.ibm.com -n $ns -o name 2>/dev/null)
     [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"global": {"replicas": '$mcmcoreReplicas'}}}' ||
+    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"replicaCount":'$mcmcoreReplicas'}}' ||
     echo "Cannot find custom resource for kuis.management.ibm.com, skip" | tee -a "$logpath"
 
     echo "" | tee -a "$logpath"
@@ -160,9 +160,9 @@ enableHAForKong() {
     echo "Cannot find clusterserviceversion for ibm-management-kong, skip" | tee -a "$logpath"
 
     # Kong
-    local cr=$($ocOrKubectl get kongs.management.ibm.com -n $ns -o name)
+    local cr=$($ocOrKubectl get kongs.management.ibm.com -n $ns -o name 2>/dev/null)
     [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"replicas": '$defaultReplicas'}}' ||
+    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"replicaCount":'$defaultReplicas'}}' ||
     echo "Cannot find custom resource for kongs.management.ibm.com, skip" | tee -a "$logpath"
 
     echo "" | tee -a "$logpath"
@@ -180,13 +180,13 @@ enableHAForServiceLibrary() {
     echo "Cannot find clusterserviceversion for ibm-management-service-library, skip" | tee -a "$logpath"
 
     # Service Library UI
-    local cr=$($ocOrKubectl get servicelibraryuis.servicelibraryui.management.ibm.com -n $ns -o name)
+    local cr=$($ocOrKubectl get servicelibraryuis.servicelibraryui.management.ibm.com -n $ns -o name 2>/dev/null)
     [[ -n $cr ]] &&
     $ocOrKubectl patch $cr -n $ns --type='json' -p '[{"op":"replace","path":"/spec/deployment/spec/replicas","value":'$defaultReplicas'}]' ||
     echo "Cannot find custom resource for servicelibraryuis.servicelibraryui.management.ibm.com, skip" | tee -a "$logpath"
 
     # Service Library UI API
-    cr=$($ocOrKubectl get servicelibraryuiapis.servicelibraryuiapi.management.ibm.com -n $ns -o name)
+    cr=$($ocOrKubectl get servicelibraryuiapis.servicelibraryuiapi.management.ibm.com -n $ns -o name 2>/dev/null)
     [[ -n $cr ]] &&
     $ocOrKubectl patch $cr -n $ns --type='json' -p '[{"op":"replace","path":"/spec/deployment/spec/replicas","value":'$defaultReplicas'}]' ||
     echo "Cannot find custom resource for servicelibraryuiapis.servicelibraryuiapi.management.ibm.com, skip" | tee -a "$logpath"
@@ -206,8 +206,10 @@ enableHAForCAM() {
     echo "Cannot find clusterserviceversion for ibm-management-cam-install, skip" | tee -a "$logpath"
 
     # Manage Service
-    local cr=$($ocOrKubectl get manageservices.cam.management.ibm.com -n $ns -o name)
-    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec": {"camController": {"replicaCount": '$defaultReplicas'}}}'
+    local cr=$($ocOrKubectl get manageservices.cam.management.ibm.com -n $ns -o name 2>/dev/null)
+    [[ -n $cr ]] &&
+    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"camController":{"replicaCount":'$defaultReplicas'}}}' ||
+    echo "Cannot find custom resource for manageservices.cam.management.ibm.com, skip" | tee -a "$logpath"
 
     echo "" | tee -a "$logpath"
 }
