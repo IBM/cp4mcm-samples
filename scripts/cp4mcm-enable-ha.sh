@@ -130,7 +130,7 @@ enableHAForMCMCore() {
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-mcm)
     [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type="json" -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
+    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
     echo "Cannot find clusterserviceversion for ibm-management-mcm, skip" | tee -a "$logpath"
 
     # MCM Core
@@ -156,7 +156,7 @@ enableHAForKong() {
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-kong)
     [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type="json" -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
+    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
     echo "Cannot find clusterserviceversion for ibm-management-kong, skip" | tee -a "$logpath"
 
     # Kong
@@ -176,7 +176,7 @@ enableHAForServiceLibrary() {
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-service-library)
     [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type="json" -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
+    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
     echo "Cannot find clusterserviceversion for ibm-management-service-library, skip" | tee -a "$logpath"
 
     # Service Library UI
@@ -202,7 +202,7 @@ enableHAForCAM() {
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-cam-install)
     [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type="json" -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
+    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
     echo "Cannot find clusterserviceversion for ibm-management-cam-install, skip" | tee -a "$logpath"
 
     # Manage Service
@@ -210,6 +210,40 @@ enableHAForCAM() {
     [[ -n $cr ]] &&
     $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"camController":{"replicaCount":'$defaultReplicas'}}}' ||
     echo "Cannot find custom resource for manageservices.cam.management.ibm.com, skip" | tee -a "$logpath"
+
+    echo "" | tee -a "$logpath"
+}
+
+enableHAForHybrid() {
+    local ns="openshift-operators"
+
+    echo "Attempting to enable HA for ibm-management-hybridapp" | tee -a "$logpath"
+
+    # Operator
+    local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-hybridapp)
+    [[ -n $csv ]] &&
+    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
+    echo "Cannot find clusterserviceversion for ibm-management-hybridapp, skip" | tee -a "$logpath"
+
+    # Operator(CR)
+    local cr=$($ocOrKubectl get operators.deploy.hybridapp.io -n $ns -o name 2>/dev/null)
+    [[ -n $cr ]] &&
+    $ocOrKubectl patch $cr -n $ns --type='json' -p '[{"op":"replace","path":"/spec/replicas","value":'$defaultReplicas'}]' ||
+    echo "Cannot find custom resource for operators.deploy.hybridapp.io, skip" | tee -a "$logpath"
+
+    echo "" | tee -a "$logpath"
+}
+
+enableHAForRuntimeManagement() {
+    local ns="kube-system"
+
+    echo "Attempting to enable HA for ibm-management-manage-runtime" | tee -a "$logpath"
+
+    # Operator
+    local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-manage-runtime)
+    [[ -n $csv ]] &&
+    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
+    echo "Cannot find clusterserviceversion for ibm-management-manage-runtime, skip" | tee -a "$logpath"
 
     echo "" | tee -a "$logpath"
 }
@@ -222,6 +256,8 @@ enableHA(){
     enableHAForKong
     enableHAForServiceLibrary
     enableHAForCAM
+    enableHAForHybrid
+    enableHAForRuntimeManagement
     
     echo "Successfully enabled HA for all components in IBM Cloud Pak for Multicloud Management that support HA." | tee -a "$logpath"
 }
