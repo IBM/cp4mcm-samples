@@ -29,14 +29,16 @@ pathToKubeconfig="$HOME/.kube/config"
 ocOrKubectl=""
 mcmcoreReplicas=3
 defaultReplicas=2
+enableOrDisable="enable"
 
 helpFunc() {
     echo "Usage $0"
-    echo "Use this script to enable HA for IBM Cloud Pak for Multicloud Management"
+    echo "Use this script to enable or diable HA for IBM Cloud Pak for Multicloud Management"
     echo
     echo "  *Flags:"
     echo 
     echo "     --kubeconfigPath                 The absolute path to the kubeconfig file to access the cluster"
+    echo "     --disable                        Disable HA. It will enable HA as default behavior if this flag is omitted"
     echo "     --help                           Print the help information"
     echo
     exit 0
@@ -54,6 +56,8 @@ parse_args() {
       case $ARG in
           "--KUBECONFIGPATH")      #
             pathToKubeconfig=$2; shift 2; ARGC=$(($ARGC-2)) ;;
+          "--DISABLE")      #
+            enableOrDisable="disable"; mcmcoreReplicas=1; defaultReplicas=1; shift; ARGC=$(($ARGC-1)) ;;
           "--HELP")      #
             helpFunc
             exit 1 ;;
@@ -125,7 +129,7 @@ validate(){
 enableHAForMCMCore() {
     local ns="kube-system"
 
-    echo "Attempting to enable HA for ibm-management-mcm" | tee -a "$logpath"
+    echo "Attempting to $enableOrDisable HA for ibm-management-mcm" | tee -a "$logpath"
 
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-mcm)
@@ -151,7 +155,7 @@ enableHAForMCMCore() {
 enableHAForKong() {
     local ns="kube-system"
 
-    echo "Attempting to enable HA for ibm-management-kong" | tee -a "$logpath"
+    echo "Attempting to $enableOrDisable HA for ibm-management-kong" | tee -a "$logpath"
 
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-kong)
@@ -171,7 +175,7 @@ enableHAForKong() {
 enableHAForServiceLibrary() {
     local ns="management-infrastructure-management"
 
-    echo "Attempting to enable HA for ibm-management-service-library" | tee -a "$logpath"
+    echo "Attempting to $enableOrDisable HA for ibm-management-service-library" | tee -a "$logpath"
 
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-service-library)
@@ -197,7 +201,7 @@ enableHAForServiceLibrary() {
 enableHAForCAM() {
     local ns="management-infrastructure-management"
 
-    echo "Attempting to enable HA for ibm-management-cam-install" | tee -a "$logpath"
+    echo "Attempting to $enableOrDisable HA for ibm-management-cam-install" | tee -a "$logpath"
 
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-cam-install)
@@ -217,7 +221,7 @@ enableHAForCAM() {
 enableHAForHybrid() {
     local ns="openshift-operators"
 
-    echo "Attempting to enable HA for ibm-management-hybridapp" | tee -a "$logpath"
+    echo "Attempting to $enableOrDisable HA for ibm-management-hybridapp" | tee -a "$logpath"
 
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-hybridapp)
@@ -237,7 +241,7 @@ enableHAForHybrid() {
 enableHAForRuntimeManagement() {
     local ns="kube-system"
 
-    echo "Attempting to enable HA for ibm-management-manage-runtime" | tee -a "$logpath"
+    echo "Attempting to $enableOrDisable HA for ibm-management-manage-runtime" | tee -a "$logpath"
 
     # Operator
     local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-manage-runtime)
@@ -249,7 +253,7 @@ enableHAForRuntimeManagement() {
 }
 
 enableHA(){
-    echo "Start to enable HA for each component in IBM Cloud Pak for Multicloud Management..." | tee -a "$logpath"
+    echo "Start to $enableOrDisable HA for each component in IBM Cloud Pak for Multicloud Management..." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 
     enableHAForMCMCore
@@ -259,7 +263,7 @@ enableHA(){
     enableHAForHybrid
     enableHAForRuntimeManagement
     
-    echo "Successfully enabled HA for all components in IBM Cloud Pak for Multicloud Management that support HA." | tee -a "$logpath"
+    echo "Successfully ${enableOrDisable}d HA for all components in IBM Cloud Pak for Multicloud Management that support HA." | tee -a "$logpath"
 }
 
 # end core stuff
