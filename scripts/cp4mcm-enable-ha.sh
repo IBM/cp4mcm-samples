@@ -27,20 +27,47 @@ logs="cp4mcm-enable-ha-logs."
 logpath="/tmp/$logs$timestamp.txt"
 pathToKubeconfig="$HOME/.kube/config"
 ocOrKubectl=""
-mcmcoreReplicas=3
-defaultReplicas=2
-enableOrDisable="enable"
+
+operate=""
+moduleAlias=""
+
+# modules that support HA
+modules=(
+    'mcm|MCM|ibm-management-mcm'
+    'kong|Kong|ibm-management-kong'
+    'service-library|ServiceLibrary|ibm-management-service-library'
+    'cam|CAM|ibm-management-cam-install'
+    'hybridapp|HybridApp|ibm-management-hybridapp'
+    'manage-runtime|ManageRuntime|ibm-management-manage-runtime'
+    'ui|UI|ibm-management-ui'
+    'notary|Notary|ibm-management-notary'
+    'image-security-enforcement|ImageSecurityEnforcement|ibm-management-image-security-enforcement'
+)
 
 helpFunc() {
     echo "Usage $0"
     echo "Use this script to enable or diable HA for IBM Cloud Pak for Multicloud Management"
     echo
-    echo "  *Flags:"
+    echo "  Flags:"
     echo 
     echo "     --kubeconfigPath                 The absolute path to the kubeconfig file to access the cluster"
-    echo "     --disable                        Disable HA. It will enable HA as default behavior if this flag is omitted"
+    echo "     --list                           List the modules that support HA"
+    echo "     --enable                         Enable HA"
+    echo "     --disable                        Disable HA"
+    echo "     --verify                         Verify the results by listing the corresponding Kubernetes resources"
+    echo "     --module <module>                Enable, diable, or verify HA for a specific module. Use --list to get all valid module names"
     echo "     --help                           Print the help information"
     echo
+    echo "  Usage examples:"
+    echo
+    echo "     $0 --list                        List the modules that support HA"
+    echo "     $0 --enable                      Enable HA for all modules"
+    echo "     $0 --disable                     Disable HA for all modules"
+    echo "     $0 --verify                      Verify the results for all modules"
+    echo "     $0 --module ui --enable          Enable HA for one module"
+    echo "     $0 --module ui --disable         Disable HA for one module"
+    echo "     $0 --module ui --verify          Verify the results for one module"
+    echo 
     exit 0
 }
 
@@ -54,11 +81,27 @@ parse_args() {
           ARG=`echo $1 | tr .[a-z]. .[A-Z].`
       fi
       case $ARG in
-          "--KUBECONFIGPATH")      #
+          "--KUBECONFIGPATH")
             pathToKubeconfig=$2; shift 2; ARGC=$(($ARGC-2)) ;;
-          "--DISABLE")      #
-            enableOrDisable="disable"; mcmcoreReplicas=1; defaultReplicas=1; shift; ARGC=$(($ARGC-1)) ;;
-          "--HELP")      #
+          "--LIST")
+            listModules; shift; ARGC=$(($ARGC-1))
+            exit 0 ;;
+          "--MODULE")
+            moduleAlias=$(aliasOf $2)
+            if [[ -z $moduleAlias ]]; then
+                echo "Module \"$2\" not known. Exiting." | tee -a "$logpath"
+                echo "Please run $0 --list to get all valid module names." | tee -a "$logpath"
+                echo "" | tee -a "$logpath"
+                exit 1
+            fi
+            shift 2; ARGC=$(($ARGC-2)) ;;
+          "--ENABLE")
+            operate="enable"; shift; ARGC=$(($ARGC-1)) ;;
+          "--DISABLE")
+            operate="disable"; shift; ARGC=$(($ARGC-1)) ;;
+          "--VERIFY")
+            operate="verify"; shift; ARGC=$(($ARGC-1)) ;;
+          "--HELP")
             helpFunc
             exit 1 ;;
           *)
@@ -68,25 +111,27 @@ parse_args() {
             exit 1 ;;
       esac
     done
+
+    [[ -z $operate ]] && helpFunc
 }
 
 checkKubeconfig() {
     if [[ "${pathToKubeconfig}" == "" || -z "${pathToKubeconfig}" ]]; then
-      echo "No path was provided to the --pathToKubeconfig flag, please provide a path"
+      echo "No path was provided to the --pathToKubeconfig flag, please provide a path." | tee -a "$logpath"
       exit 1
     elif [[ ! -f "${pathToKubeconfig}" ]]; then
-      echo "No file was found at ${pathToKubeconfig}; please use an absolute path to the kubeconfig for the cluster" | tee -a "$logpath"
+      echo "No file was found at ${pathToKubeconfig}; please use an absolute path to the kubeconfig for the cluster." | tee -a "$logpath"
       exit 1
     fi
     
     $ocOrKubectl get pods --all-namespaces=true --kubeconfig="${pathToKubeconfig}" | grep "openshift" > /dev/null 2>&1
     local result=$?
     if [[ "${result}" -ne 0 ]]; then
-      echo "Attempt to access cluster with kubeconfig at ${pathToKubeconfig} has failed" | tee -a "$logpath"
+      echo "Attempt to access cluster with kubeconfig at ${pathToKubeconfig} has failed." | tee -a "$logpath"
       exit 1
     fi
 
-    echo "Successfully used kubeconfig provided" | tee -a "$logpath"
+    echo "Successfully used kubeconfig provided." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
     return 0
 }
@@ -97,17 +142,17 @@ checkIfocANDORkubectlInstalled() {
     which kubectl > /dev/null 2>&1
     local result2=$?
     if [[ "${result1}" -ne 0 && "${result2}" -ne 0 ]]; then
-      echo "Neither oc nor kubectl could be found in the PATH; ensure that these two programs are in the PATH" | tee -a "$logpath"
+      echo "Neither oc nor kubectl could be found in the PATH; ensure that these two programs are in the PATH." | tee -a "$logpath"
       echo "" | tee -a "$logpath"
       echo "Current PATH: $PATH" | tee -a "$logpath"
       exit 1
     elif [[ "${result1}" -eq 0 ]]; then
-      echo "Found the oc binary; using it to interact with cluster" | tee -a "$logpath"
+      echo "Found the oc binary; using it to interact with cluster." | tee -a "$logpath"
       echo "" | tee -a "$logpath"
       ocOrKubectl="oc"
       return 0
     else
-      echo "Found the kubectl binary; using it to interact with cluster" | tee -a "$logpath"
+      echo "Found the kubectl binary; using it to interact with cluster." | tee -a "$logpath"
       echo "" | tee -a "$logpath"
       ocOrKubectl="kubectl"
       return 0
@@ -117,7 +162,7 @@ checkIfocANDORkubectlInstalled() {
 validate(){
     checkIfocANDORkubectlInstalled
     checkKubeconfig
-    echo "Validation of parameters and environment complete" | tee -a "$logpath"
+    echo "Validation of parameters and environment complete." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
     return 0
 }
@@ -126,152 +171,275 @@ validate(){
 
 # begin core stuff
 
-enableHAForMCMCore() {
-    local ns="kube-system"
+listModules() {
+    echo "Modules that support HA:" | tee -a "$logpath"
+    echo "" | tee -a "$logpath"
 
-    echo "Attempting to $enableOrDisable HA for ibm-management-mcm" | tee -a "$logpath"
-
-    # Operator
-    local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-mcm)
-    [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find clusterserviceversion for ibm-management-mcm, skip" | tee -a "$logpath"
-
-    # MCM Core
-    local cr=$($ocOrKubectl get mcmcores.management.ibm.com -n $ns -o name 2>/dev/null)
-    [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"global":{"replicas":'$mcmcoreReplicas'}}}' ||
-    echo "Cannot find custom resource for mcmcores.management.ibm.com, skip" | tee -a "$logpath"
-
-    # KUI
-    cr=$($ocOrKubectl get kuis.management.ibm.com -n $ns -o name 2>/dev/null)
-    [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"replicaCount":'$mcmcoreReplicas'}}' ||
-    echo "Cannot find custom resource for kuis.management.ibm.com, skip" | tee -a "$logpath"
+    for module in ${modules[@]}; do
+        echo "  * ${module%%|*}" | tee -a "$logpath"
+    done
 
     echo "" | tee -a "$logpath"
+}
+
+aliasOf() {
+    local actualModule=$1
+    for module in ${modules[@]}; do
+        local mName=${module%%|*}
+        local mAlias=${module#*|}; mAlias=${mAlias%|*}
+        [[ $actualModule == $mName ]] && echo $mAlias && return
+    done
+}
+
+idOf() {
+    local actualModule=$1
+    for module in ${modules[@]}; do
+        local mName=${module%%|*}
+        local mId=${module##*|}
+        [[ $actualModule == $mName ]] && echo $mId && return
+    done
+}
+
+enableHAForMCM() {
+    enableHAForModule kube-system mcm \
+        mcmcores.management.ibm.com '/spec/global/replicas' \
+        kuis.management.ibm.com     '/spec/replicaCount'
 }
 
 enableHAForKong() {
-    local ns="kube-system"
-
-    echo "Attempting to $enableOrDisable HA for ibm-management-kong" | tee -a "$logpath"
-
-    # Operator
-    local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-kong)
-    [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find clusterserviceversion for ibm-management-kong, skip" | tee -a "$logpath"
-
-    # Kong
-    local cr=$($ocOrKubectl get kongs.management.ibm.com -n $ns -o name 2>/dev/null)
-    [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"replicaCount":'$defaultReplicas'}}' ||
-    echo "Cannot find custom resource for kongs.management.ibm.com, skip" | tee -a "$logpath"
-
-    echo "" | tee -a "$logpath"
+    enableHAForModule kube-system kong \
+        kongs.management.ibm.com '/spec/replicaCount'
 }
 
 enableHAForServiceLibrary() {
-    local ns="management-infrastructure-management"
-
-    echo "Attempting to $enableOrDisable HA for ibm-management-service-library" | tee -a "$logpath"
-
-    # Operator
-    local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-service-library)
-    [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find clusterserviceversion for ibm-management-service-library, skip" | tee -a "$logpath"
-
-    # Service Library UI
-    local cr=$($ocOrKubectl get servicelibraryuis.servicelibraryui.management.ibm.com -n $ns -o name 2>/dev/null)
-    [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type='json' -p '[{"op":"replace","path":"/spec/deployment/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find custom resource for servicelibraryuis.servicelibraryui.management.ibm.com, skip" | tee -a "$logpath"
-
-    # Service Library UI API
-    cr=$($ocOrKubectl get servicelibraryuiapis.servicelibraryuiapi.management.ibm.com -n $ns -o name 2>/dev/null)
-    [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type='json' -p '[{"op":"replace","path":"/spec/deployment/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find custom resource for servicelibraryuiapis.servicelibraryuiapi.management.ibm.com, skip" | tee -a "$logpath"
-
-    echo "" | tee -a "$logpath"
+    enableHAForModule management-infrastructure-management service-library \
+        servicelibraryuis.servicelibraryui.management.ibm.com       '/spec/deployment/spec/replicas' \
+        servicelibraryuiapis.servicelibraryuiapi.management.ibm.com '/spec/deployment/spec/replicas'
 }
 
 enableHAForCAM() {
-    local ns="management-infrastructure-management"
+    enableHAForModule management-infrastructure-management cam \
+        manageservices.cam.management.ibm.com '/spec/camAPI/replicaCount'   \
+        manageservices.cam.management.ibm.com '/spec/camProxy/replicaCount' \
+        manageservices.cam.management.ibm.com '/spec/camUI/replicaCount'    \
+        manageservices.cam.management.ibm.com '/spec/camController/replicaCount'
+}
 
-    echo "Attempting to $enableOrDisable HA for ibm-management-cam-install" | tee -a "$logpath"
+enableHAForHybridApp() {
+    enableHAForModule openshift-operators hybridapp \
+        operators.deploy.hybridapp.io '/spec/replicas'
+}
 
-    # Operator
-    local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-cam-install)
+enableHAForManageRuntime() {
+    enableHAForModule kube-system manage-runtime
+}
+
+enableHAForUI() {
+    enableHAForModule kube-system ui \
+        consoleuis.consoleui.management.ibm.com         '/spec/replicas' \
+        applicationuis.applicationui.management.ibm.com '/spec/replicas' \
+        grcuis.grcui.management.ibm.com                 '/spec/replicas' \
+        grcuiapis.grcuiapi.management.ibm.com           '/spec/replicas' \
+        consoleuiapis.consoleuiapi.management.ibm.com   '/spec/replicas'
+}
+
+enableHAForNotary() {
+    enableHAForModule management-security-services notary \
+        notaries.notary.management.ibm.com '/spec/notaryServer/replicaCount' \
+        notaries.notary.management.ibm.com '/spec/notarySigner/replicaCount'
+}
+
+enableHAForImageSecurityEnforcement() {
+    enableHAForModule management-security-services image-security-enforcement \
+        imagesecurityenforcement '/spec/replicaCount'
+}
+
+replicasOf() {
+    if [[ $operate == disable ]]; then
+        echo 1
+    else
+        [[ $1 == mcm ]] && echo 3 || echo 2
+    fi
+}
+
+enableHAForModule() {
+    local namespace="$1"
+    local module="$2"
+    local crPaths=(${@:3})
+    local crPathNum=${#crPaths[@]}
+    local replicas=$(replicasOf $module)
+
+    echo "Attempting to $operate HA for module $module ..." | tee -a "$logpath"
+    echo "" | tee -a "$logpath"
+
+    echo "* To $operate HA for operator ..." | tee -a "$logpath"
+
+    local csv=$($ocOrKubectl get csv -n $namespace -o name | grep $(idOf $module))
     [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find clusterserviceversion for ibm-management-cam-install, skip" | tee -a "$logpath"
+    $ocOrKubectl patch $csv -n $namespace --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$replicas'}]' ||
+    echo "Cannot find clusterserviceversion for $module, skip this step." | tee -a "$logpath"
 
-    # Manage Service
-    local cr=$($ocOrKubectl get manageservices.cam.management.ibm.com -n $ns -o name 2>/dev/null)
-    [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type=merge -p '{"spec":{"camController":{"replicaCount":'$defaultReplicas'}}}' ||
-    echo "Cannot find custom resource for manageservices.cam.management.ibm.com, skip" | tee -a "$logpath"
+    [[ $crPathNum != 0 ]] && echo "* To $operate HA for operands ..." | tee -a "$logpath"
 
+    for (( i = 0; i < ${#crPaths[@]}; i += 2 )); do
+        local cr=${crPaths[i]}
+        local path=${crPaths[i+1]}
+        local crResource=$($ocOrKubectl get $cr -n $namespace -o name 2>/dev/null)
+
+        [[ -n $crResource ]] &&
+        $ocOrKubectl patch $crResource -n $namespace --type='json' -p '[{"op":"replace","path":"'$path'","value":'$replicas'}]' ||
+        echo "Cannot find custom resource for $cr, skip this step." | tee -a "$logpath"
+    done
+
+    echo "" | tee -a "$logpath"
+    echo "Changes have been applied to $operate HA for $module" | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 }
 
-enableHAForHybrid() {
-    local ns="openshift-operators"
-
-    echo "Attempting to $enableOrDisable HA for ibm-management-hybridapp" | tee -a "$logpath"
-
-    # Operator
-    local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-hybridapp)
-    [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find clusterserviceversion for ibm-management-hybridapp, skip" | tee -a "$logpath"
-
-    # Operator(CR)
-    local cr=$($ocOrKubectl get operators.deploy.hybridapp.io -n $ns -o name 2>/dev/null)
-    [[ -n $cr ]] &&
-    $ocOrKubectl patch $cr -n $ns --type='json' -p '[{"op":"replace","path":"/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find custom resource for operators.deploy.hybridapp.io, skip" | tee -a "$logpath"
-
-    echo "" | tee -a "$logpath"
-}
-
-enableHAForRuntimeManagement() {
-    local ns="kube-system"
-
-    echo "Attempting to $enableOrDisable HA for ibm-management-manage-runtime" | tee -a "$logpath"
-
-    # Operator
-    local csv=$($ocOrKubectl get csv -n $ns -o name | grep ibm-management-manage-runtime)
-    [[ -n $csv ]] &&
-    $ocOrKubectl patch $csv -n $ns --type='json' -p '[{"op":"replace","path":"/spec/install/spec/deployments/0/spec/replicas","value":'$defaultReplicas'}]' ||
-    echo "Cannot find clusterserviceversion for ibm-management-manage-runtime, skip" | tee -a "$logpath"
-
-    echo "" | tee -a "$logpath"
-}
-
-enableHA(){
-    echo "Start to $enableOrDisable HA for each component in IBM Cloud Pak for Multicloud Management..." | tee -a "$logpath"
+enableHAForAll() {
+    echo "Start to $operate HA for IBM Cloud Pak for Multicloud Management ..." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 
-    enableHAForMCMCore
+    enableHAForMCM
     enableHAForKong
     enableHAForServiceLibrary
     enableHAForCAM
-    enableHAForHybrid
-    enableHAForRuntimeManagement
-    
-    echo "Successfully ${enableOrDisable}d HA for all components in IBM Cloud Pak for Multicloud Management that support HA." | tee -a "$logpath"
+    enableHAForHybridApp
+    enableHAForManageRuntime
+    enableHAForUI
+    enableHAForNotary
+    enableHAForImageSecurityEnforcement
+
+    echo "All changes have been applied to $operate HA for IBM Cloud Pak for Multicloud Management." | tee -a "$logpath"
+    echo "" | tee -a "$logpath"
+}
+
+DP_HEADLINE="NAME.*READY.*UP-TO-DATE.*AVAILABLE.*AGE"
+SS_HEADLINE="NAME.*READY.*AGE"
+RS_HEADLINE="NAME.*DESIRED.*CURRENT.*READY.*AGE"
+
+withHeadline() {
+    case $1 in
+    "deployment")
+        echo "$2\|$DP_HEADLINE" ;;
+    "statefulset")
+        echo "$2\|$SS_HEADLINE" ;;
+    "replicaset")
+        echo "$2\|$RS_HEADLINE" ;;
+    esac
+}
+
+verifyHAForModule() {
+    local include
+    local exclude
+    local POSITIONAL=()
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+      --include)
+        include=$2; shift 2 ;;
+      --exclude)
+        exclude=$2; shift 2 ;;
+      *)
+        POSITIONAL+=("$1"); shift ;;
+      esac
+    done
+
+    local namespace=${POSITIONAL[0]}
+    local module=${POSITIONAL[1]}
+    local conditions=(${POSITIONAL[@]:2})
+
+    echo "Attempting to list resources for module $module ..." | tee -a "$logpath"
+    echo "" | tee -a "$logpath"
+
+    for (( i = 0; i < ${#conditions[@]}; i += 2 )); do
+        local resource=${conditions[i]}
+        local condition=${conditions[i+1]}
+        condition=$(withHeadline $resource $condition)
+
+        echo "* Resource: $resource" | tee -a "$logpath"
+
+        if [[ -n $include ]]; then
+            local include=$(withHeadline $resource $include)
+            [[ -n $($ocOrKubectl get $resource -n $namespace -o name | grep "$condition" | grep "$include") ]] &&
+            $ocOrKubectl get $resource -n $namespace 2>/dev/null | grep "$condition" | grep "$include" | tee -a "$logpath" ||
+            echo "No resources found." | tee -a "$logpath"
+        elif [[ -n $exclude ]]; then
+            [[ -n $($ocOrKubectl get $resource -n $namespace -o name | grep "$condition" | grep -v "$exclude") ]] &&
+            $ocOrKubectl get $resource -n $namespace 2>/dev/null | grep "$condition" | grep -v "$exclude" | tee -a "$logpath" ||
+            echo "No resources found." | tee -a "$logpath"
+        else
+            [[ -n $($ocOrKubectl get $resource -n $namespace -o name | grep "$condition" | tee -a "$logpath") ]] &&
+            $ocOrKubectl get $resource -n $namespace 2>/dev/null | grep "$condition" | tee -a "$logpath" ||
+            echo "No resources found." | tee -a "$logpath"
+        fi
+    done
+
+    echo "" | tee -a "$logpath"
+}
+
+verifyHAForMCM() {
+    verifyHAForModule kube-system mcm deployment 'multicluster\|mcm-operator\|kui' statefulset 'multicluster' --exclude 'ui'
+}
+
+verifyHAForKong() {
+    verifyHAForModule kube-system kong deployment 'kong'
+}
+
+verifyHAForServiceLibrary() {
+    verifyHAForModule management-infrastructure-management service-library deployment 'service-library'
+}
+
+verifyHAForCAM() {
+    verifyHAForModule management-infrastructure-management cam deployment 'cam' statefulset 'cam'
+}
+
+verifyHAForHybridApp() {
+    verifyHAForModule openshift-operators hybridapp deployment 'ibm.*hybridapp' replicaset 'cp4mcm-hybridapp'
+}
+
+verifyHAForManageRuntime() {
+    verifyHAForModule kube-system manage-runtime deployment 'manage-runtime'
+}
+
+verifyHAForUI() {
+    verifyHAForModule kube-system ui deployment 'multicluster\|mcm-ui-operator' --include 'ui'
+}
+
+verifyHAForNotary() {
+    verifyHAForModule management-security-services notary deployment 'notary'
+}
+
+verifyHAForImageSecurityEnforcement() {
+    verifyHAForModule management-security-services image-security-enforcement deployment 'image.*enforcement'
+}
+
+verifyHAForAll() {
+    echo "Start to $operate HA for IBM Cloud Pak for Multicloud Management ..." | tee -a "$logpath"
+    echo "" | tee -a "$logpath"
+
+    verifyHAForMCM
+    verifyHAForKong
+    verifyHAForServiceLibrary
+    verifyHAForCAM
+    verifyHAForHybridApp
+    verifyHAForManageRuntime
+    verifyHAForUI
+    verifyHAForNotary
+    verifyHAForImageSecurityEnforcement
 }
 
 # end core stuff
 
 main(){
     echo "Executing $0; logs available at $logpath"
+
     validate
-    enableHA
+
+    if [[ 'enable or disable' =~ $operate ]]; then
+        [[ -z $moduleAlias ]] && enableHAForAll || enableHAFor${moduleAlias}
+    elif [[ 'verify' == $operate ]]; then
+        [[ -z $moduleAlias ]] && verifyHAForAll || verifyHAFor${moduleAlias}
+    fi
 }
 
 parse_args "$@"
