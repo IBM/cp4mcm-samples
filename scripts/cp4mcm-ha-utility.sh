@@ -23,7 +23,7 @@ CALLER=$_
 # begin admin stuff
 
 timestamp=`date +%Y%m%d%H%M`
-logs="cp4mcm-enable-ha-logs."
+logs="cp4mcm-ha-utility-logs."
 logpath="/tmp/$logs$timestamp.txt"
 pathToKubeconfig="$HOME/.kube/config"
 ocOrKubectl=""
