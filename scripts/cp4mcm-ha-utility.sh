@@ -50,12 +50,12 @@ helpFunc() {
     echo
     echo "  Flags:"
     echo 
-    echo "     --kubeconfigPath                 The absolute path to the kubeconfig file to access the cluster"
+    echo "     --kubeconfigPath                 The absolute path to the kubeconfig file to access the cluster. Use default kubeconfig if it is omitted"
     echo "     --list                           List the modules that support HA"
-    echo "     --enable                         Enable HA"
-    echo "     --disable                        Disable HA"
+    echo "     --enable                         Enable HA for all modules, or a particular module if --module is specified"
+    echo "     --disable                        Disable HA for all modules, or a particular module if --module is specified"
     echo "     --verify                         Verify the results by listing the corresponding Kubernetes resources"
-    echo "     --module <module>                Enable, diable, or verify HA for a specific module. Use --list to get all valid module names"
+    echo "     --module <module>                Enable, diable, or verify HA for a particular module. Use --list to get all valid module names"
     echo "     --help                           Print the help information"
     echo
     echo "  Usage examples:"
@@ -269,7 +269,7 @@ enableHAForModule() {
     local crPathNum=${#crPaths[@]}
     local replicas=$(replicasOf $module)
 
-    echo "Attempting to $operate HA for module $module ..." | tee -a "$logpath"
+    echo "Attempting to $operate HA for module $module in $namespace namespace ..." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 
     echo "* To $operate HA for operator ..." | tee -a "$logpath"
@@ -348,7 +348,7 @@ verifyHAForModule() {
     local module=${POSITIONAL[1]}
     local conditions=(${POSITIONAL[@]:2})
 
-    echo "Attempting to list resources for module $module ..." | tee -a "$logpath"
+    echo "Attempting to list resources for module $module in $namespace namespace ..." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 
     for (( i = 0; i < ${#conditions[@]}; i += 2 )); do
@@ -362,15 +362,15 @@ verifyHAForModule() {
             local include=$(withHeadline $resource $include)
             [[ -n $($ocOrKubectl get $resource -n $namespace -o name | grep "$condition" | grep "$include") ]] &&
             $ocOrKubectl get $resource -n $namespace 2>/dev/null | grep "$condition" | grep "$include" | tee -a "$logpath" ||
-            echo "No resources found." | tee -a "$logpath"
+            echo "No resources found in $namespace namespace." | tee -a "$logpath"
         elif [[ -n $exclude ]]; then
             [[ -n $($ocOrKubectl get $resource -n $namespace -o name | grep "$condition" | grep -v "$exclude") ]] &&
             $ocOrKubectl get $resource -n $namespace 2>/dev/null | grep "$condition" | grep -v "$exclude" | tee -a "$logpath" ||
-            echo "No resources found." | tee -a "$logpath"
+            echo "No resources found in $namespace namespace." | tee -a "$logpath"
         else
             [[ -n $($ocOrKubectl get $resource -n $namespace -o name | grep "$condition" | tee -a "$logpath") ]] &&
             $ocOrKubectl get $resource -n $namespace 2>/dev/null | grep "$condition" | tee -a "$logpath" ||
-            echo "No resources found." | tee -a "$logpath"
+            echo "No resources found in $namespace namespace." | tee -a "$logpath"
         fi
     done
 
