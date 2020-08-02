@@ -274,6 +274,7 @@ deleteResource() {
     resourceName=$3
 
     if [[ "${resourceName}" == "" ]]; then
+	echo "The resourceName argument was null" >> $logpath
 	return 0
     fi
 
@@ -288,7 +289,6 @@ deleteResource() {
     echo "Deleting ${resourceType}: ${resourceName} in namespace: ${namespace}" | tee -a "$logpath"
     echo "" | tee -a "$logpath"
     
-    echo "Attempting to delete resource" | tee -a "$logpath"
     $ocOrKubectl delete "${resourceType}" "${resourceName}" -n "${namespace}" --force --grace-period=0 --kubeconfig="${pathToKubeconfig}" & >> $logpath
     local result=$?
     if [[ "${result}" -ne 0 ]]; then
@@ -723,14 +723,35 @@ removeMisc() {
     fi
 }
 
+deleteRoute(){
+    echo "Deleting vault-route in kube-system namespace"
+    vaultRoute=`$ocOrKubectl get route -n kube-system | grep "vault-route"`
+    deleteResource "route" "kube-system" "${vaultRoute}"
+    result=$?
+    if [[ "${result}" -ne 0 ]]; then
+	echo "Could not delete vault-route route in kube-system namespace" | tee -a "$logpath"
+	echo "" | tee -a "$logpath"
+	return 1
+    else
+	echo "Successfully deleted vault-route route in kube-system namespace" | tee -a "$logpath"
+	echo "" | tee -a "$logpath"
+	return 0
+    fi
+}
+
 postUninstallFunc() {
     checkIfInstallationInstanceExists
+    local result=$?
     removeMisc
+    result=$(( result + $? ))
     echo "Delaying for 300 seconds after removal of CSV and Subscriptions"
     sleep 300s
+    deleteRoute
+    result=$(( result + $? ))
     deleteSecrets
+    result=$(( result + $? ))
     deleteCRDs
-    local result=$?
+    result=$(( result + $? ))
     if [[ "${result}" -ne 0 ]]; then
 	return 1
 	echo "Did not successfully complete postUninstallCleanup" | tee -a "$logpath"
