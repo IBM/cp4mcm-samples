@@ -201,24 +201,24 @@ idOf() {
 }
 
 enableHAForMCM() {
-    enableHAForModule kube-system mcm \
+    enableHAFor kube-system mcm \
         mcmcores.management.ibm.com '/spec/global/replicas' \
         kuis.management.ibm.com     '/spec/replicaCount'
 }
 
 enableHAForKong() {
-    enableHAForModule kube-system kong \
+    enableHAFor kube-system kong \
         kongs.management.ibm.com '/spec/replicaCount'
 }
 
 enableHAForServiceLibrary() {
-    enableHAForModule management-infrastructure-management service-library \
+    enableHAFor management-infrastructure-management service-library \
         servicelibraryuis.servicelibraryui.management.ibm.com       '/spec/deployment/spec/replicas' \
         servicelibraryuiapis.servicelibraryuiapi.management.ibm.com '/spec/deployment/spec/replicas'
 }
 
 enableHAForCAM() {
-    enableHAForModule management-infrastructure-management cam \
+    enableHAFor management-infrastructure-management cam \
         manageservices.cam.management.ibm.com '/spec/camAPI/replicaCount'   \
         manageservices.cam.management.ibm.com '/spec/camProxy/replicaCount' \
         manageservices.cam.management.ibm.com '/spec/camUI/replicaCount'    \
@@ -226,16 +226,16 @@ enableHAForCAM() {
 }
 
 enableHAForHybridApp() {
-    enableHAForModule openshift-operators hybridapp \
+    enableHAFor openshift-operators hybridapp \
         operators.deploy.hybridapp.io '/spec/replicas'
 }
 
 enableHAForManageRuntime() {
-    enableHAForModule kube-system manage-runtime
+    enableHAFor kube-system manage-runtime
 }
 
 enableHAForUI() {
-    enableHAForModule kube-system ui \
+    enableHAFor kube-system ui \
         consoleuis.consoleui.management.ibm.com         '/spec/replicas' \
         applicationuis.applicationui.management.ibm.com '/spec/replicas' \
         grcuis.grcui.management.ibm.com                 '/spec/replicas' \
@@ -244,13 +244,13 @@ enableHAForUI() {
 }
 
 enableHAForNotary() {
-    enableHAForModule management-security-services notary \
+    enableHAFor management-security-services notary \
         notaries.notary.management.ibm.com '/spec/notaryServer/replicaCount' \
         notaries.notary.management.ibm.com '/spec/notarySigner/replicaCount'
 }
 
 enableHAForImageSecurityEnforcement() {
-    enableHAForModule management-security-services image-security-enforcement \
+    enableHAFor management-security-services image-security-enforcement \
         imagesecurityenforcement '/spec/replicaCount'
 }
 
@@ -262,7 +262,7 @@ replicasOf() {
     fi
 }
 
-enableHAForModule() {
+enableHAFor() {
     local namespace="$1"
     local module="$2"
     local crPaths=(${@:3})
@@ -329,7 +329,7 @@ withHeadline() {
     esac
 }
 
-verifyHAForModule() {
+verifyHAFor() {
     local include
     local exclude
     local POSITIONAL=()
@@ -378,39 +378,39 @@ verifyHAForModule() {
 }
 
 verifyHAForMCM() {
-    verifyHAForModule kube-system mcm deployment 'multicluster\|mcm-operator\|kui' statefulset 'multicluster' --exclude 'ui'
+    verifyHAFor kube-system mcm deployment 'multicluster\|mcm-operator\|kui' statefulset 'multicluster' --exclude 'ui'
 }
 
 verifyHAForKong() {
-    verifyHAForModule kube-system kong deployment 'kong'
+    verifyHAFor kube-system kong deployment 'kong'
 }
 
 verifyHAForServiceLibrary() {
-    verifyHAForModule management-infrastructure-management service-library deployment 'service-library'
+    verifyHAFor management-infrastructure-management service-library deployment 'service-library'
 }
 
 verifyHAForCAM() {
-    verifyHAForModule management-infrastructure-management cam deployment 'cam' statefulset 'cam'
+    verifyHAFor management-infrastructure-management cam deployment 'cam' statefulset 'cam'
 }
 
 verifyHAForHybridApp() {
-    verifyHAForModule openshift-operators hybridapp deployment 'ibm.*hybridapp' replicaset 'cp4mcm-hybridapp'
+    verifyHAFor openshift-operators hybridapp deployment 'ibm.*hybridapp' replicaset 'cp4mcm-hybridapp'
 }
 
 verifyHAForManageRuntime() {
-    verifyHAForModule kube-system manage-runtime deployment 'manage-runtime'
+    verifyHAFor kube-system manage-runtime deployment 'manage-runtime'
 }
 
 verifyHAForUI() {
-    verifyHAForModule kube-system ui deployment 'multicluster\|mcm-ui-operator' --include 'ui'
+    verifyHAFor kube-system ui deployment 'multicluster\|mcm-ui-operator' --include 'ui'
 }
 
 verifyHAForNotary() {
-    verifyHAForModule management-security-services notary deployment 'notary'
+    verifyHAFor management-security-services notary deployment 'notary'
 }
 
 verifyHAForImageSecurityEnforcement() {
-    verifyHAForModule management-security-services image-security-enforcement deployment 'image.*enforcement'
+    verifyHAFor management-security-services image-security-enforcement deployment 'image.*enforcement'
 }
 
 verifyHAForAll() {
