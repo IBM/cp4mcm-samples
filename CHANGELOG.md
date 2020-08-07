@@ -15,3 +15,11 @@ All notable changes to this project will be documented in this file.
 - Added ma-prereq-offline.sh; it aids the customer in installing Mutation Advisor prereas for offline case.
 [unreleased]: https://github.com/ibm/repo-template/compare/v0.0.1...HEAD
 [0.0.1]: https://github.com/ibm/repo-template/releases/tag/v0.0.1
+
+## [0.0.3] - 2020-07-28
+
+### Added
+- Added the following three yaml files that are used for Unified Agent deployment:
+  - `reloader.yaml`
+  - `ua-deploy.yaml`
+  - `ua-operator-deploy.yaml`
