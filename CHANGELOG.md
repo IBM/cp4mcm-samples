@@ -13,5 +13,7 @@ All notable changes to this project will be documented in this file.
 - Added cp4mcm-cleanup-utility.sh; it aids the customer in removing CP4MCM resources
 - Added ma-prereq.sh; it aids the customer in installing Mutation Advisor prereas
 - Added ma-prereq-offline.sh; it aids the customer in installing Mutation Advisor prereas for offline case.
+- Added cp4mcm-ha-utility.sh; it aids the customer to enable HA for CP4MCM
+
 [unreleased]: https://github.com/ibm/repo-template/compare/v0.0.1...HEAD
 [0.0.1]: https://github.com/ibm/repo-template/releases/tag/v0.0.1
