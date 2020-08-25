@@ -25,3 +25,8 @@ All notable changes to this project will be documented in this file.
   - `reloader.yaml`
   - `ua-deploy.yaml`
   - `ua-operator-deploy.yaml`
+
+## [0.0.4] - 2020-08-18
+
+### Added
+- Added collectContainerLogs.sh which is used for collecting logs. 
