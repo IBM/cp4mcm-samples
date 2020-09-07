@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sre-monitor-mcm
+  namespace: REPLACE_NAMESPACE
+  labels:
+    app: sre-monitor-mcm-job
+spec:
+  template:
+    metadata:
+      name: sre-monitor-mcm-job
+      labels:
+        app: sre-monitor-mcm-job
+    spec:
+      serviceAccountName: REPLACE_SA
+      containers:
+        - name: monitor
+          image: REPLACE_DOCKER_REGISTRY/sretest/sre-monitor-mcm:test
+          imagePullPolicy: Always
+          command: ["/scripts/monitor.sh", "REPLACE_NAMESPACE"]
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "25m"
+            limits:
+              memory: "128Mi"
+              cpu: "50m"
+      hostIPC: false
+      hostNetwork: false
+      hostPID: false
+      restartPolicy: OnFailure
