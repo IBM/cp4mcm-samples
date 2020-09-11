@@ -513,6 +513,7 @@ deleteCRDs() {
 	"monitoringdeploys.monitoring.management.ibm.com"
 	# hybrid-app
 	"operators.deploy.hybridapp.io"
+	"clusters.clusterregistry.k8s.io"
 	# notary
 	"notaries.notary.management.ibm.com"
 	# image-security-enforcement
