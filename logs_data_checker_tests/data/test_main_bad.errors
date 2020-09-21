@@ -1,0 +1,10 @@
+Line 0 has 1 errors: [Timestamp Error]: Incorrect timestamp
+Line 2 has 2 errors: [Validation Error]: data must contain ['application_group_id', 'application_id', 'message', 'instance_id', 'timestamp', 'features', 'meta_features', 'entities'] properties, [Timestamp Error]: Incorrect timestamp
+Line 3 has 1 errors: [Timestamp Error]: Incorrect timestamp
+Line 4 has 2 errors: [Validation Error]: data must contain ['application_group_id', 'application_id', 'message', 'instance_id', 'timestamp', 'features', 'meta_features', 'entities'] properties, [Timestamp Error]: Incorrect timestamp
+Line 5 has 1 errors: [Timestamp Error]: Incorrect timestamp
+Line 7 has 2 errors: [Validation Error]: data must contain ['application_group_id', 'application_id', 'message', 'instance_id', 'timestamp', 'features', 'meta_features', 'entities'] properties, [Time Error]: Missing "timestamp"
+Line 8 has 2 errors: [Validation Error]: data.entities must be object, [Timestamp Error]: Incorrect timestamp
+Line 9 has 2 errors: [Validation Error]: data must contain ['application_group_id', 'application_id', 'message', 'instance_id', 'timestamp', 'features', 'meta_features', 'entities'] properties, [Timestamp Error]: Incorrect timestamp
+Line 10 has 1 errors: [Timestamp Error]: Incorrect timestamp
+Line 11 has 1 errors: [Timestamp Error]: Incorrect timestamp

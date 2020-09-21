@@ -1,20 +1,45 @@
-<!-- This should be the location of the title of the repository, normally the short name -->
-# IBM Cloud Pak for Multicloud Management Sample Files (cp4mcm-samples)
+# data-quality-checker
 
-<!-- Build Status, is a great thing to have at the top of your repository, it shows that you take your CI/CD as first class citizens -->
-<!-- [![Build Status](https://travis-ci.org/jjasghar/ibm-cloud-cli.svg?branch=master)](https://travis-ci.org/jjasghar/ibm-cloud-cli) -->
+The data training quality checker for AIOps log training
 
-<!-- Not always needed, but a scope helps the user understand in a short sentance like below, why this repo exists -->
-## Scope
+## Prequisite
 
-The purpose of this project is to provide sample files and code snippets for IBM Cloud Pak for Multicloud Management; for example, configuration yaml files, script sample files, and so on. You can directly download these files for either installing or configuring IBM Cloud Pak for Multicloud Management.
+* Install dependencies
+  * `pip install requirements/base.txt`
+  * `pip install requirements/test.txt` for running unit test
+* Set ENV
+  * Add the path of this repo in `PYTHONPATH`, e.g. `export PYTHONPATH=/Users/ME/data-quality-checker:$PYTHONPATH`
 
-<!-- A more detailed Usage or detailed explaination of the repository here -->
-## Usage
+## Run the data checker
+  * Usage:
 
-To understand and use the IBM Cloud Pak for Multicloud Management, see the [documentation](https://www.ibm.com/support/knowledgecenter/SSFC4F/product_welcome_cloud_pak.html) and select the appropriate version.  
+  ```
+    Usage: checker.py [OPTIONS] FILE
 
-In the documentation, if the sample yaml file or script file is long, it is not included in the content. Instead, it is available inside this repo and linked to from the topic. By clicking the link in the topic, you open the specific file url and can then download the file to your local directory for direct use.  
+    Options:
+      -n, --sample-size INTEGER  SAMPLE_SIZE: Number of samples. Default:1000
+      -r, --random-sampling      Randomly check SAMPLE_SIZE line of logs
+      -f, --full                 Run checks for all the logs, the results are out of order.
+      -p, --parallel INTEGER    Number of parallelism for running the full check. Default:4
+      --help                     Show this message and exit.
+  ```
+
+  * Default: `python checker.py TEST_LOGS_FILE >results`
+    * The fist `SAMPLE_SIZE` lines will be checked and reported if there is any problem found.
+    * The `SAMPLE_SIZE`  can be set by `-n`. e.g. `-n 10000`
+    * It runs faster when pipe the output to a file.
+  * Random sampling: `python -r checker.py TEST_LOGS_FILE >results`
+    * `SAMPLE_SIZE` lines will be sampled from the input file if it has more than `SAMPLE_SIZE` lines. These lines will be checked and reorted if there is any problem found.
+  * Full scanning: `python -f checker.py TEST_LOGS_FILE >results`
+    * Check the all the logs in the file. Results will be not be in the original order.
+    * The number of parallism can be set by `-p`. e.g. `-p 8`
+    * For reference, checking 10M logs takes around 5 minutes with default parallism on a 2019 Mac Book Pro.
+
+## Run unit test
+  * `pytest logs_data_checker_tests -s --cov=logs_data_checker --cov-report term-missing --cov-report cov.xml`
+
+
+
 
 ## Contributing
 Pull requests are very welcome! Make sure that your patches are tested. Ideally create a topic branch for every separate change you make. For example:
@@ -48,6 +73,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-
-
-[issues]: https://github.com/IBM/repo-template/issues/new
