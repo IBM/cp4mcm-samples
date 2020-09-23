@@ -1,0 +1,25 @@
+{
+  "message": "invoking [applyModel] WorkspaceId = 1b69b204-5432-496f-8e61-da7e4b037730",
+  "timestamp": 1578669135680,
+  "instance_id": "nlu",
+  "features": [],
+  "meta_features": [
+    {
+      "type": "WindowMeta",
+      "obj_value": {
+        "start": 1578669130000,
+        "end": 1578669140000
+      }
+    }
+  ],
+  "level": 1,
+  "type": "StandardLog",
+  "utc_timestamp": "2020-01-10 15:12:15.680000",
+  "entities": {
+    "pod": "pmp015-nlu-6bc9cb9574-pgkgg",
+    "_cluster": "ld60",
+    "container": "nlu"
+  },
+  "application_group_id": "1",
+  "application_id": "1"
+}
