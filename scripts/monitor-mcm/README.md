@@ -1,5 +1,5 @@
 # Overview
-The script to monitor legacy search and recover the legacy search from aggregator hang or redisgraph can't response issues.
+This is the script to monitor legacy search and recover the legacy search from aggregator hang or redisgraph fail to respond status.
 
 # Steps to deploy the legacy search monitoring job
 1. Prepare one service account with Docker registory pull authority and the following pod authority
