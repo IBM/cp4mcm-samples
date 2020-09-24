@@ -2,7 +2,7 @@
 
 if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     echo Usage: $0 \<DOCK_REGISTRY\> \<NAME_SPACE\> \<SA\>
-    echo You must specify docker registry for docker image of monitor job, namespace of legacy search and service account to deploy the monitor job and a build number.
+    echo You must specify the docker registry for the docker image of the monitor job, namespace of legacy search, and service account to deploy the monitor job and a build number.
     echo Exit ...
     exit -1
 fi
