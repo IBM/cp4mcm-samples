@@ -50,6 +50,8 @@ Pull requests are very welcome! Make sure that your patches are tested. Ideally 
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
+Please also check [CONTRIBUTING](CONTRIBUTING.md)
+
 **Note:** Make sure you update the [Changelog](CHANGELOG.md) each time you add, remove, or update sample files.
 
 ## License & Authors

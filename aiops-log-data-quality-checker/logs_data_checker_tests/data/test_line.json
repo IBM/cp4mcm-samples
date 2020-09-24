@@ -1,7 +1,7 @@
 {
-  "message": "invoking [applyModel] WorkspaceId = 1b69b204-5432-496f-8e61-da7e4b037730",
+  "message": "some logs",
   "timestamp": 1578669135680,
-  "instance_id": "nlu",
+  "instance_id": "myapp",
   "features": [],
   "meta_features": [
     {
@@ -16,9 +16,9 @@
   "type": "StandardLog",
   "utc_timestamp": "2020-01-10 15:12:15.680000",
   "entities": {
-    "pod": "pmp015-nlu-6bc9cb9574-pgkgg",
-    "_cluster": "ld60",
-    "container": "nlu"
+    "pod": "pod1",
+    "_cluster": "cluster1",
+    "container": "myapp"
   },
   "application_group_id": "1",
   "application_id": "1"
