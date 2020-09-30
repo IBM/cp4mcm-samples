@@ -25,3 +25,10 @@ All notable changes to this project will be documented in this file.
   - `reloader.yaml`
   - `ua-deploy.yaml`
   - `ua-operator-deploy.yaml`
+  
+## [0.0.4] - 2020-09-30
+
+### Added
+- Added legacy search monitoring job deployment script
+  - `scripts/monitor-mcm`
+
