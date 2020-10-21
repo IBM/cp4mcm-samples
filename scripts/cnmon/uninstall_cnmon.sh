@@ -21,7 +21,7 @@ esac
 kubectl cluster-info
 if [ ! $? -eq 0 ]
 then
-  echo "Please login the cluster and rerun the script"
+  echo "Log in to the cluster and rerun the script."
   exit 1
 fi
 
