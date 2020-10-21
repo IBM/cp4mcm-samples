@@ -203,7 +203,7 @@ then
   if [ $podcnt -gt 0 ]
   then
     kubectl get pods -n $namespace
-    echo "There are running pods, you might have other deployments installed in namespace $namespace, please check and uninstall all deployments before rerun this script to delete namespace $namespace."
+    echo "There are running pods. If you have other deployments installed in namespace $namespace, check and uninstall all deployments before rerun this script to delete namespace $namespace."
     exit 1
   else
     echo "Pods are terminated"
