@@ -7,7 +7,7 @@ then
 fi
 echo "Uninstall Cloud Native Monitoring from namespace $namespace..."
 
-echo "Please make sure you have changed the label to ibm.com/cloud-native-monitoring: \"disabled\" at IBM Cloud Pak® for Multicloud Management hub cluster for this managed cluster"
+echo "Ensure that you have changed the label to ibm.com/cloud-native-monitoring: \"disabled\" at IBM Cloud Pak® for Multicloud Management hub cluster for this managed cluster"
 
 echo "Do you want to continue [ y or n; \"n\" is default ]?"
 read REPLY
@@ -178,8 +178,8 @@ then
   kubectl get pods -n $namespace
   echo ""
 
-  echo "If you have deployments other than Cloud Native Monitoring installed in namespace $namespace, please uninstall all the other deployments before run this script to delete namespace."
-  echo "***** PLEASE NOTE ALL RESOURCES IN NAMESPACE $namespace WILL BE DELETED!!! *****"
+  echo "If you have deployments other than Cloud Native Monitoring installed in namespace $namespace, you must uninstall all of the other deployments before run this script to delete this namespace."
+  echo "***** NOTE THAT ALL RESOURCES IN NAMESPACE $namespace WILL BE DELETED!!! *****"
   echo "Do you want to continue [ y or n; \"n\" is default ]?"
   read REPLY
   case $REPLY in
