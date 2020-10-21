@@ -31,3 +31,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added legacy search monitoring job deployment script
   - `scripts/monitor-mcm`
+
+## [0.0.5] - 2020-10-20
+
+### Added
+- Added cloud native monitoring uninstall script
+  - `scripts/cnmon/uninstall_cnmon.sh`
