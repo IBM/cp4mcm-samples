@@ -37,3 +37,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added cloud native monitoring uninstall script
   - `scripts/cnmon/uninstall_cnmon.sh`
+
+## [0.0.6] - 2020-10-22
+
+### Added
+- Added RHACM 2.1 issuer workaround script
+  - `scripts/cp4mcm-rhacm21-cp-issuer-secret.sh`
