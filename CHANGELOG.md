@@ -14,3 +14,7 @@ All notable changes to this project will be documented in this file.
 - Added ma-prereq.sh; it aids the customer in installing Mutation Advisor prereas
 [unreleased]: https://github.com/ibm/repo-template/compare/v0.0.1...HEAD
 [0.0.1]: https://github.com/ibm/repo-template/releases/tag/v0.0.1
+
+
+## [0.0.3] - 2020-10-23
+- Added uninstall.sh; it is a standalone utility to help the customer uninstall the Cloud Pak for MultiCloud Management; valid for use in CP4MCM 2.0
