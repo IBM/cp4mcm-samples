@@ -43,3 +43,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added RHACM 2.1 issuer workaround script
   - `scripts/cp4mcm-rhacm21-cp-issuer-secret.sh`
+  
+## [0.0.6] - 2020-10-24
+- Added uninstall.sh; it is a standalone utility to help the customer uninstall the Cloud Pak for MultiCloud Management; valid for use in CP4MCM 2.0
+  - `scripts/uninstall.sh`
