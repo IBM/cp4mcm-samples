@@ -12,9 +12,38 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added cp4mcm-cleanup-utility.sh; it aids the customer in removing CP4MCM resources
 - Added ma-prereq.sh; it aids the customer in installing Mutation Advisor prereas
+- Added ma-prereq-offline.sh; it aids the customer in installing Mutation Advisor prereas for offline case.
+- Added cp4mcm-ha-utility.sh; it aids the customer to enable HA for CP4MCM
+
 [unreleased]: https://github.com/ibm/repo-template/compare/v0.0.1...HEAD
 [0.0.1]: https://github.com/ibm/repo-template/releases/tag/v0.0.1
 
+## [0.0.3] - 2020-07-28
 
-## [0.0.3] - 2020-10-23
+### Added
+- Added the following three yaml files that are used for Unified Agent deployment:
+  - `reloader.yaml`
+  - `ua-deploy.yaml`
+  - `ua-operator-deploy.yaml`
+
+## [0.0.4] - 2020-09-30
+
+### Added
+- Added legacy search monitoring job deployment script
+  - `scripts/monitor-mcm`
+
+## [0.0.5] - 2020-10-20
+
+### Added
+- Added cloud native monitoring uninstall script
+  - `scripts/cnmon/uninstall_cnmon.sh`
+
+## [0.0.6] - 2020-10-22
+
+### Added
+- Added RHACM 2.1 issuer workaround script
+  - `scripts/cp4mcm-rhacm21-cp-issuer-secret.sh`
+  
+## [0.0.6] - 2020-10-24
 - Added uninstall.sh; it is a standalone utility to help the customer uninstall the Cloud Pak for MultiCloud Management; valid for use in CP4MCM 2.0
+  - `scripts/uninstall.sh`

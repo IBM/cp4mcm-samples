@@ -1,0 +1,1 @@
+{"message":"some message","timestamp":1578669135680,"instance_id":"myapp","features":[],"meta_features":[{"type":"WindowMeta","obj_value":{"start":1578669130000,"end":1578669140000}}],"entities":{"pod":"pod1","_cluster":"cluster1","container":"myapp"},"application_group_id":"1","application_id":"1"}

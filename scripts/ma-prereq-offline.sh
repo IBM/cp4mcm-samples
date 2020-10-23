@@ -1,8 +1,25 @@
 #!/bin/bash
 
+function wait_until_running () {
+    namespace=$1
+    name=$2
+    while true
+    do
+        echo "Waiting for debug pod to be Running..."
+        sleep 5
+        
+        if oc get pod -n ${namespace} ${name} | grep Running > /dev/null ; then
+            echo "the debug pod is ready. Start to copy files."
+            break
+        fi
+    done
+}
+
 function install_header_on_signle_node () {
     node_number=$1
-    debug_image=$2
+    rpm_file_path=$2
+    rpm_file_name=`basename ${rpm_file_path}`
+    debug_image=$3
     image_option=""
     if [[ ! -z "$debug_image" ]] ; then
         echo "debug_image: $debug_image"
@@ -15,12 +32,21 @@ function install_header_on_signle_node () {
     echo "Start to install kernel headers on the node $nodename."
     echo ""
 
-    oc debug ${image_option} ${debug_image} node/${nodename} -- bash -c "chroot /host bash -c \"
+    debug_pod=`oc debug node/${nodename} -o json`
+    namespace=`echo -e "${debug_pod}" | jq -r .metadata.namespace`
+    name=`echo -e "${debug_pod}" | jq -r .metadata.name`
+    echo $namespace
+    echo $name
+    echo ""
+
+    nohup bash -c "oc debug ${image_option} ${debug_image} node/${nodename} --no-tty=true -- sleep 600" > /dev/null &
+    wait_until_running ${namespace} ${name}
+    oc cp -n ${namespace} ${rpm_file_path} ${name}:/host/etc/${rpm_file_name}
+    oc exec -it -n ${namespace} ${name} -- bash -c "chroot /host bash -c \"
 #!/bin/bash
 nsenter -t 1 -n -m -u -p -i -- bash -c \\\"
 #!/bin/bash
 kernel_version=\\\`uname -r\\\`
-arch=\\\`uname -m\\\`
 kernel_major_version=\\\`uname -r | sed 's/\([.0-9]*-[0-9]*\).*/\1/g'\\\`
 kernel_header_dir=/usr/src/kernels/\\\\\\\${kernel_version}
 
@@ -51,71 +77,41 @@ sudo mount -o lowerdir=/lib/modules,upperdir=/opt/modules,workdir=/opt/modules.w
 
 sudo setenforce 0
 
-repo_url_1=http://ftp.heanet.ie/pub/centos/8/BaseOS/x86_64/os/
-repo_url_2=http://vault.centos.org/8.1.1911/BaseOS/x86_64/os/
-
-if [[ \\\\\\\$arch -eq \\\\\\\"ppc64le\\\\\\\" ]]; then
-    repo_url_1=http://ftp.heanet.ie/pub/centos/8/BaseOS/ppc64le/os/
-    repo_url_2=http://vault.centos.org/8.1.1911/BaseOS/ppc64le/os/
-fi
-
-
 bash -c \\\\\\\"
 
 src_kernel_version=\\\\\\\$kernel_version
 rename_required=0
 
 ###########################################
-#   Trial 1:  download rpm & install
+#   Trial 1:  extract rpm & place the files
 ###########################################
 
+
 if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
-    echo Trying \\\\\\\${repo_url_1}...
-    status_code=\\\\\\\\\\\\\\\`curl --write-out %{http_code} -sk --output /etc/kernel-devel-\\\\\\\${kernel_version}.rpm \\\\\\\${repo_url_1}Packages/kernel-devel-\\\\\\\${kernel_version}.rpm\\\\\\\\\\\\\\\`
-    if [[ "\\\\\\\\\\\\\\\$status_code" -eq 200 ]] ; then
-        rpm2cpio /etc/kernel-devel-\\\\\\\${kernel_version}.rpm | cpio -id
+    echo Extracting files from rpm...
+    if [[ -f /etc/${rpm_file_name} ]] ; then
+        rpm2cpio /etc/${rpm_file_name} | cpio -id
     fi
-fi
 
-if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
-    echo Trying \\\\\\\${repo_url_2}...
-    status_code=\\\\\\\\\\\\\\\`curl --write-out %{http_code} -sk --output /etc/kernel-devel-\\\\\\\${kernel_version}.rpm \\\\\\\${repo_url_2}Packages/kernel-devel-\\\\\\\${kernel_version}.rpm\\\\\\\\\\\\\\\`
-    if [[ "\\\\\\\\\\\\\\\$status_code" -eq 200 ]] ; then
-        rpm2cpio /etc/kernel-devel-\\\\\\\${kernel_version}.rpm | cpio -id
-    fi
-fi
-
-###########################################
-#   Trial 2:  download latest kernel-devel for the same major kernel version & install (then rename dir)
-###########################################
-
-if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
-    echo Trying \\\\\\\${repo_url_1}...
-    found_kernel_version=\\\\\\\\\\\\\\\`curl -sk '\\\\\\\${repo_url_1}Packages/?C=M;O=A' | grep kernel-devel-\\\\\\\${kernel_major_version} | tail -n 1 | sed 's/.*kernel-devel-\(.*\).rpm.*/\1/g'\\\\\\\\\\\\\\\`
-    if [[ ! -z "\\\\\\\\\\\\\\\$found_kernel_version" ]] ; then
-        status_code=\\\\\\\\\\\\\\\`curl --write-out %{http_code} -sk --output /etc/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm \\\\\\\${repo_url_1}Packages/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm\\\\\\\\\\\\\\\`
-        if [[ "\\\\\\\\\\\\\\\$status_code" -eq 200 ]] ; then
-            rpm2cpio /etc/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm | cpio -id
+    if [[ -d \\\\\\\$kernel_header_dir ]]; then
+        echo extracted files are placed at \\\\\\\$kernel_header_dir .
+    else
+        echo Trying to find kernel headers with same major kernel version...
+        found_kernel_version=\\\\\\\\\\\\\\\`ls -1t '/usr/src/kernels/' | grep \\\\\\\${kernel_major_version} | head -n 1 \\\\\\\\\\\\\\\`
+        if [[ ! -z "\\\\\\\\\\\\\\\$found_kernel_version" ]] ; then
+            echo Found extracted files at /usr/src/kernels/\\\\\\\\\\\\\\\$found_kernel_version . this will be copied to /usr/src/kernels/\\\\\\\$kernel_version .
             src_kernel_version=\\\\\\\\\\\\\\\${found_kernel_version}
             rename_required=1
+        else
+            echo ''
+            echo Failed to find correct version of kernel header files. please confirm the RPM package is for \\\\\\\${kernel_major_version}.xx.xx .
+            exit 1
         fi
-    fi
     
+    fi
+
 fi
 
-if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
-    echo Trying \\\\\\\${repo_url_2}...
-    found_kernel_version=\\\\\\\\\\\\\\\`curl -sk '\\\\\\\${repo_url_2}Packages/?C=M;O=A' | grep kernel-devel-\\\\\\\${kernel_major_version} | tail -n 1 | sed 's/.*kernel-devel-\(.*\).rpm.*/\1/g'\\\\\\\\\\\\\\\`
-    if [[ ! -z "\\\\\\\\\\\\\\\$found_kernel_version" ]] ; then
-        status_code=\\\\\\\\\\\\\\\`curl --write-out %{http_code} -sk --output /etc/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm \\\\\\\${repo_url_2}Packages/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm\\\\\\\\\\\\\\\`
-        if [[ "\\\\\\\\\\\\\\\$status_code" -eq 200 ]] ; then
-            rpm2cpio /etc/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm | cpio -id
-            src_kernel_version=\\\\\\\\\\\\\\\${found_kernel_version}
-            rename_required=1
-        fi
-    fi
-    
-fi
 
 ###########################################
 #   rename dir name if necessary
@@ -146,11 +142,11 @@ fi
 \" # end of chroot
 echo \$?
 " 2>&1 | tee /tmp/ma-install-kernel.log # end of oc debug
-    ret_val=`cat /tmp/ma-install-kernel.log | tail -n 3 | head -n 1`
+    oc delete pod -n ${namespace} ${name}
+    ret_val=`cat /tmp/ma-install-kernel.log | tail -n 1 | sed 's/[^0-9]*//g'`
     rm /tmp/ma-install-kernel.log
     return $ret_val
 }
-
 
 args=$(getopt -l "debug-image:" -o "d:h" -- "$@")
 
@@ -168,7 +164,7 @@ while [ $# -ge 1 ]; do
             shift
             ;;
         -h|--help)
-            echo "./install-kernel-headers-on-all-nodes.sh [--debug-image=DEBUG_IMAGE]"
+            echo "./install-kernel-headers-on-all-nodes-air-gap.sh [--debug-image=DEBUG_IMAGE] RPM_FILE"
             exit 0
             ;;
     esac
@@ -178,8 +174,9 @@ done
 #echo "debug_image: $debug_image"
 #echo "remaining args: $*"
 
-
 declare -a nodearray=()
+
+rpm_file_path=$*
 
 nodes=`oc get node --selector='node-role.kubernetes.io/worker' | awk '{print $0}'`
 
@@ -216,7 +213,7 @@ node_num=${#nodearray[@]}
 
 for (( i = 1; i < $node_num; i++ )) 
 do 
-    if install_header_on_signle_node "$i" "$debug_image"; then
+    if install_header_on_signle_node "$i" "$rpm_file_path" "$debug_image" ; then
         continue
     else
         echo "Failed to install kernel header on ${nodearray[$i]}"

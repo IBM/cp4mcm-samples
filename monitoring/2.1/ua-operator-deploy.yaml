@@ -1,0 +1,298 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: "ua-operator"
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: true
+  hostPID: true
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name:  ua-cloud-monitoring
+imagePullSecrets:
+    - name: pull-secret-ua
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: "ua-operator"
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - "*"
+  verbs:
+  - "*"
+- nonResourceURLs:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - extensions
+  resourceNames:
+  - "ua-operator"
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: "ua-operator"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "ua-operator"
+subjects:
+- kind: ServiceAccount
+  name:  ua-cloud-monitoring
+  namespace: REPLACE_WITH_TARGET_NAMESPACE
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger
+spec:
+  ports:
+  - name: jaeger
+    port: 14268
+    targetPort: 14268
+    protocol: TCP
+  selector:
+    app:  ua-cloud-monitoring
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lwdc
+spec:
+  ports:
+  - name: client-connect
+    port: 8848
+    targetPort: 8848
+  selector:
+    app:  ua-cloud-monitoring
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zipkin
+spec:
+  ports:
+  - name: zipkin
+    port: 9411
+    targetPort: 9411
+    protocol: TCP
+  selector:
+    app:  ua-cloud-monitoring
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  annotations:
+    prometheus.io/scrape: "true"
+spec:
+  ports:
+  - port: 9273
+    protocol: TCP
+    targetPort: 9273
+  selector:
+    app:  ua-cloud-monitoring
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dotnetcore
+spec:
+  ports:
+  - name: client-connect
+    port: 8849
+    targetPort: 8849
+  selector:
+    app:  ua-cloud-monitoring
+  type: ClusterIP
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ua-operator
+  labels:
+    app: "ua-operator"
+    chart: "ibm-ua-operator"
+    heritage: "Tiller"
+    release: "kindred-lightningbug"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+        app: "ua-operator"
+        chart: "ibm-ua-operator"
+        heritage: "Tiller"
+        release: "kindred-lightningbug"
+        component: "operator"
+  template:
+    metadata:
+      annotations:        
+        productID: "ibm-ua-operator"
+        productName: "ibm-ua-operator"
+        productVersion: "v1.0"
+      labels:
+        app: "ua-operator"
+        chart: "ibm-ua-operator"
+        heritage: "Tiller"
+        release: "kindred-lightningbug"
+        component: "operator"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                  - amd64
+                  - ppc64le
+                  - s390x
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: ua-cloud-monitoring
+
+      containers:
+        - name: ua-operator
+          image: REPLACE_WITH_YOUR_IMAGE
+          command:
+          - ua-operator
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: 512Mi 
+              cpu: 500m 
+            requests:
+              memory: 200Mi
+              cpu: 100m
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: ua-operator
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+               - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation : false
+          livenessProbe:
+            exec:
+              command:
+              - cat
+              - /usr/local/bin/files/tag.props
+            initialDelaySeconds: 3
+            periodSeconds: 3
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-ua-operator
+  labels:
+    app: "ua-operator"
+    chart: "ibm-ua-operator"
+    heritage: "Tiller"
+    release: "kindred-lightningbug"
+    component: "ua-cloud-monitoring"
+spec:
+  template:
+    metadata:
+      annotations:        
+        productID: "ibm-ua-operator"
+        productName: "ibm-ua-operator"
+        productVersion: "v1.0"
+      labels:
+        app: "ua-operator"
+        chart: "ibm-ua-operator"
+        heritage: "Tiller"
+        release: "kindred-lightningbug"
+        component: "ua-cloud-monitoring"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                  - amd64
+                  - ppc64le
+                  - s390x
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      serviceAccountName: ua-cloud-monitoring
+
+      restartPolicy: OnFailure
+      containers:
+        - name: ua-crfiles
+          image: REPLACE_WITH_YOUR_IMAGE
+          command:
+            - "/bin/bash"
+            - "-c"
+            - "/usr/local/bin/files/create-cr.sh REPLACE_WITH_TARGET_NAMESPACE"
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              memory: 512Mi 
+              cpu: 500m 
+            requests:
+              memory: 200Mi
+              cpu: 100m
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+               - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation : false

@@ -1,0 +1,4 @@
+fastjsonschema==2.14.5
+importlib_resources==3.0.0
+click==7.1.2
+python-dateutil==2.8.1
