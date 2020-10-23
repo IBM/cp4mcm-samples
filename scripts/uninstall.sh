@@ -41,7 +41,7 @@ userTimeout="null"
 
 helpFunc() {
        echo "Usage $0"
-       echo "Use this script to remove orphaned resources for the CloudPak for Multicloud Management"
+       echo "Use this script to remove orphaned resources for the IBM Cloud Pak for Multicloud Management"
        echo
        echo "  *Primary flags:"
        echo 
@@ -53,7 +53,7 @@ helpFunc() {
        echo
        echo "  *Modes and usage:"
        echo
-       echo "     uninstallEverything              Description: Remove the CP4MCM installation, CRDs, dependencies, and all other resources associated with CP4MCM. You must provide the namespace where your CP4MCM workspace was installed via the --cloudpakNamespace flag"
+       echo "     uninstallEverything              Description: Remove the IBM Cloud Pak for Multicloud Management installation, dependencies, and all other resources associated with CP4MCM. You must provide the namespace where your CP4MCM workspace was installed via the --cloudpakNamespace flag"
        echo "                                      Usage: $0 --kubeconfigPath /path/to/kubeconfig --mode uninstallEverything --cloudpakNamespace cp4m"
        echo 
        echo "     anyResourceCleanup               Description: Remove an arbitrary kubernetes resource by specifying its Kind, Name, and Namespace; removes all finalizers; must provide a timeout in seconds"
