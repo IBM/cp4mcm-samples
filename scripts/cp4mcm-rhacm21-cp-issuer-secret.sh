@@ -1,34 +1,43 @@
 #!/bin/bash
-
+  
 ISSUER_NS=open-cluster-management-issuer
 CS_NS=ibm-common-services
 ISSUER_SECRET=cs-ca-certificate-secret
+SECRETSHARE=cert-manager
 INTERVAL=5
 TESTCOUNT=720
 
-r=`kubectl -n $ISSUER_NS get secret ${ISSUER_SECRET} 2>/dev/null | grep $ISSUER_SECRET`
-if [ ! -z "$r" ]; then
-  echo "secret already exist."
-  exit 0
-fi
+# TODO: oc or kubectl
 
-echo "Waiting for secret $ISSUER_SECRET to be created"
-while [[ -z "$result" && !( $TESTCOUNT == 0 ) ]]
+# Wait for SecretShare to be available
+while [[ "$result" -ne 0 && !( $TESTCOUNT == 0 ) ]]
 do
   sleep $INTERVAL
-  result=`kubectl get secret ${ISSUER_SECRET} -n $CS_NS 2>/dev/null |grep -v NAME`
+  result=`oc get secretshare.ibmcpcs.ibm.com -n $CS_NS &>/dev/null`
   TESTCOUNT=$(( $TESTCOUNT - 1 ))
-  printf "."
 done
 
-echo " "
-
-if [ -z "$result" ];then
-  echo "Timeout, failed to create issuer secret $ISSUER_SECRET in namespace $ISSUER_NS."
+if [[ "$result" -ne 0 ]];then
+  echo "Timeout, failed to find secretshare kind. Ensure the IBM Common Services operator has been installed."
   exit 1
 fi
 
-kubectl create ns ${ISSUER_NS} 2>/dev/null
-kubectl -n $CS_NS get secret ${ISSUER_SECRET} -o yaml --export| kubectl apply -n $ISSUER_NS -f -
+echo "Applying SecretShare resource"
 
-echo "issuer secret $ISSUER_SECRET created successfully."
+cat << EOF | oc apply -f -
+apiVersion: ibmcpcs.ibm.com/v1
+kind: SecretShare
+metadata:
+  name: $SECRETSHARE
+  namespace: ibm-common-services
+spec:
+  secretshares:
+  - secretname: cs-ca-certificate-secret
+    sharewith:
+    - namespace: $ISSUER_NS
+EOF
+
+if [[ "$?" -ne 0 ]];then
+        echo "Failed to apply the SecretShare resource"
+        exit 1
+fi
