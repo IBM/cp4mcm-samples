@@ -815,6 +815,6 @@ main(){
 	    exit 1 ;;
     esac
 }
-parse_args "--kubeconfigPath" "${KUBECONFIG}" "--mode" "uninstallEverything"
+parse_args "$@"
 main
 
