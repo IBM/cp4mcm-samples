@@ -1,8 +1,8 @@
 #!/bin/bash
   
-ISSUER_NS=open-cluster-management-issuer
+ACM_ISSUER_NS=open-cluster-management-issuer
 CS_NS=ibm-common-services
-ISSUER_SECRET=cs-ca-certificate-secret
+CS_ISSUER_SECRET=cs-ca-certificate-secret
 SECRETSHARE=cert-manager
 INTERVAL=5
 TESTCOUNT=720
@@ -32,9 +32,9 @@ metadata:
   namespace: $CS_NS
 spec:
   secretshares:
-  - secretname: $ISSUER_SECRET
+  - secretname: $CS_ISSUER_SECRET
     sharewith:
-    - namespace: $ISSUER_NS
+    - namespace: $ACM_ISSUER_NS
 EOF
 
 if [[ "$?" -ne 0 ]];then
