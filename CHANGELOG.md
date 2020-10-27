@@ -47,3 +47,7 @@ All notable changes to this project will be documented in this file.
 ## [0.0.6] - 2020-10-24
 - Added uninstall.sh; it is a standalone utility to help the customer uninstall the Cloud Pak for MultiCloud Management; valid for use in CP4MCM 2.0
   - `scripts/uninstall.sh`
+  
+## [0.0.7] - 2020-10-27
+- Removed default arguments to uninstall.sh
+  - `scripts/uninstall.sh`
