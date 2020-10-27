@@ -12,12 +12,16 @@ if [ ! -z "$r" ]; then
   exit 0
 fi
 
+echo "Waiting for secret $ISSUER_SECRET to be created"
 while [[ -z "$result" && !( $TESTCOUNT == 0 ) ]]
 do
   sleep $INTERVAL
   result=`kubectl get secret ${ISSUER_SECRET} -n $CS_NS 2>/dev/null |grep -v NAME`
   TESTCOUNT=$(( $TESTCOUNT - 1 ))
+  printf "."
 done
+
+echo " "
 
 if [ -z "$result" ];then
   echo "Timeout, failed to create issuer secret $ISSUER_SECRET in namespace $ISSUER_NS."
