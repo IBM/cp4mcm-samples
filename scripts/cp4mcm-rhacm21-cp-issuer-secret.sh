@@ -29,10 +29,10 @@ apiVersion: ibmcpcs.ibm.com/v1
 kind: SecretShare
 metadata:
   name: $SECRETSHARE
-  namespace: ibm-common-services
+  namespace: $CS_NS
 spec:
   secretshares:
-  - secretname: cs-ca-certificate-secret
+  - secretname: $ISSUER_SECRET
     sharewith:
     - namespace: $ISSUER_NS
 EOF
