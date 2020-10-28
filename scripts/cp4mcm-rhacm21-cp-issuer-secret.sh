@@ -7,17 +7,19 @@ SECRETSHARE=cert-manager
 INTERVAL=5
 TESTCOUNT=720
 
-# TODO: oc or kubectl
-
-# Wait for SecretShare to be available
-while [[ "$result" -ne 0 && !( $TESTCOUNT == 0 ) ]]
+printf "Checking that SecretShare resource kind exists..."
+while [[ !( $result == 0 ) && !( $TESTCOUNT == 0 ) ]]
 do
   sleep $INTERVAL
-  result=`oc get secretshare.ibmcpcs.ibm.com -n $CS_NS &>/dev/null`
+  oc get secretshare.ibmcpcs.ibm.com -n $CS_NS &>/dev/null
+  result=$?
   TESTCOUNT=$(( $TESTCOUNT - 1 ))
+  printf "."
 done
 
-if [[ "$result" -ne 0 ]];then
+echo
+
+if [[ !( $result == 0 ) ]];then
   echo "Timeout, failed to find secretshare kind. Ensure the IBM Common Services operator has been installed."
   exit 1
 fi
