@@ -54,7 +54,7 @@ sudo setenforce 0
 repo_url_1=http://ftp.heanet.ie/pub/centos/8/BaseOS/x86_64/os/
 repo_url_2=http://vault.centos.org/8.1.1911/BaseOS/x86_64/os/
 
-if [[ \\\\\\\$arch -eq \\\\\\\"ppc64le\\\\\\\" ]]; then
+if [[ \\\\\\\$arch == \\\\\\\"ppc64le\\\\\\\" ]]; then
     repo_url_1=http://ftp.heanet.ie/pub/centos/8/BaseOS/ppc64le/os/
     repo_url_2=http://vault.centos.org/8.1.1911/BaseOS/ppc64le/os/
 fi
