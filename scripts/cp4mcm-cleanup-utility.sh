@@ -44,6 +44,7 @@ helpFunc() {
        echo "                                          preUninstallCleanup"
        echo "                                          postUninstallCleanup"
        echo "                                          customResourceCleanup"
+       echo "                                          secretConfigmapCleanup"
        echo "                                          anyResourceCleanup"
        echo
        echo "  *Modes and usage:"
@@ -52,7 +53,7 @@ helpFunc() {
        echo "                                      Usage: $0 --kubeconfigPath /path/to/kubeconfig --mode preUninstallCleanup"
        echo
        echo
-       echo "     postUninstallCleanup             Description: Remove all orphaned secrets and CRDs left behind after CP4MCM is removed; Warning: this removes Common-Services and ODLM"
+       echo "     postUninstallCleanup             Description: Remove all orphaned secrets and miscellaneous resources left behind after CP4MCM is removed"
        echo "                                      Usage: $0 --kubeconfigPath /path/to/kubeconfig --mode postUninstallCleanup"
        echo
        echo
@@ -120,6 +121,8 @@ checkOptions() {
 	echo "Mode: preUninstallCleanup"
     elif [[ "${mode}" == "postUninstallCleanup" ]]; then
 	echo "Mode: postUninstallCleanup"
+    elif [[ "${mode}" == "secretConfigmapCleanup" ]]; then
+	echo "Mode: secretConfigmapCleanup"
     elif [[ "${mode}" == "customResourceCleanup" ]]; then
 	echo "Mode: customResourceCleanup"
 	echo "Operator: $operator"
@@ -159,7 +162,10 @@ checkOptions() {
 	echo
 	echo "postUninstallCleanup"
 	echo "E.g.: $0 --kubeconfigPath /path/to/kubeconfig --mode postUninstallCleanup"
-	echo	
+	echo
+	echo "postUninstallCleanup"
+	echo "E.g.: $0 --kubeconfigPath /path/to/kubeconfig --mode secretConfigmapCleanup"
+	echo 
 	echo "customResourceCleanup"
 	echo "E.g.: $0 --kubeconfigPath /path/to/kubeconfig --mode customResourceCleanup --Chatops"
 	echo	
@@ -595,17 +601,15 @@ deleteSecrets() {
     declare -a secret_array=(
 	"compliance-api-ca-cert-secrets"
 	"cs-ca-certificate-secret"
-	"hybridgrc-postgresql-secrets"
 	"grc-risk-ca-cert-secrets"
+	"hybridgrc-postgresql-secrets"
 	"ibm-license-advisor-token"
 	"ibm-licensing-bindinfo-ibm-licensing-upload-token"
 	"ibm-licensing-token"
 	"ibm-management-pull-secret"
 	"icp-management-ingress-tls-secret"
 	"icp-metering-api-secret"
-	"icp-mongodb-admin"
-	"icp-mongodb-client-cert"
-	"icp-serviceid-apikey-secret"
+	"icp-metering-receiver-proxy-secret"
 	"license-advisor-db-config"
 	"multicluster-hub-cluster-api-provider-apiserver-ca-cert-sdk"
 	"multicluster-hub-console-uiapi-secrets"
@@ -621,30 +625,29 @@ deleteSecrets() {
 	"multicluster-hub-legato-certificates-credentials"
 	"multicluster-hub-topology-secrets"
 	"platform-oidc-credentials"
+	"sa-iam-secrets"
+	"search-redisgraph-secrets"
+	"search-redisgraph-user-secrets"
+	"search-search-api-secrets"
+	"search-search-secrets"
+	"search-tiller-client-certs"
 	"sh.helm.release.v1.gateway.v1"
+	"sh.helm.release.v1.multicluster-hub.v1"
 	"sh.helm.release.v1.sre-bastion.v1"
 	"sh.helm.release.v1.sre-inventory.v1"
-	"sh.helm.release.v1.multicluster-hub.v1"
-	"teleport-credential"
-	"vault-credential"
 	"sre-bastion-bastion-secret"
 	"sre-bastion-postgresql"
 	"sre-inventory-aggregator-secrets"
+	"sre-inventory-inventory-rhacm-redisgraph-secrets"
+	"sre-inventory-inventory-rhacm-redisgraph-user-secrets"
 	"sre-inventory-redisgraph-secrets"
 	"sre-inventory-redisgraph-user-secrets"
 	"sre-inventory-search-api-secrets"
 	"sre-postgresql-bastion-secret"
 	"sre-postgresql-vault-secret"
 	"sre-vault-config"
-	"icp-metering-receiver-proxy-secret"
-	"sa-iam-secrets"
-	"sre-inventory-inventory-rhacm-redisgraph-secrets"
-	"sre-inventory-inventory-rhacm-redisgraph-user-secrets"
-	"search-redisgraph-secrets"
-	"search-redisgraph-user-secrets"
-	"search-search-api-secrets"
-	"search-search-secrets"
-	"search-tiller-client-certs"
+	"teleport-credential"
+	"vault-credential"
     )
 
     local result=0
@@ -666,63 +669,33 @@ deleteSecrets() {
 
 removeMisc() {
     echo "Removing miscellaneous resources"
-    
-    deleteResource "subscription.operators.coreos.com" "kube-system" "ibm-management-mcm"
+    deleteResource "pvc" "kube-system" "data-sre-bastion-postgresql-0" "false" 300
     result=$(( result + $? ))
-    managementCSV=`$ocOrKubectl get csv -n "kube-system" | grep "ibm-management-mcm" | awk '{ print $1 }'`
-    deleteResource "csv" "kube-system" "${managementCSV}"
+    deleteResource "pvc" "kube-system" "etcd-data-multicluster-hub-etcd-0" "false" 300
     result=$(( result + $? ))
-
-    deleteResource "subscription.operators.coreos.com" "kube-system" "ibm-management-sre-bastion"
+    deleteResource "pvc" "kube-system" "data-sre-inventory-inventory-redisgraph-0" "false" 300
     result=$(( result + $? ))
-    sreBastionCSV=`$ocOrKubectl get csv -n "kube-system" | grep "ibm-management-sre-bastion" | awk '{ print $1 }'`
-    deleteResource "csv" "kube-system" "${sreBastionCSV}"
+    deleteResource "pvc" "kube-system" "hybridgrc-db-pvc-hybridgrc-postgresql-0" "false" 300
     result=$(( result + $? ))
-
-    deleteResource "subscription.operators.coreos.com" "kube-system" "ibm-management-sre-inventory"
+    deleteResource "pvc" "kube-system" "license-advisor-pvc" "false" 300
     result=$(( result + $? ))
-    sreInventoryCSV=`$ocOrKubectl get csv -n "kube-system" | grep "ibm-management-sre-inventory" | awk '{ print $1 }'`
-    deleteResource "csv" "kube-system" "${sreInventoryCSV}"
+    deleteResource "pvc" "kube-system" "sre-bastion-teleport-storage-pvc" "false" 300
     result=$(( result + $? ))
-
-    deleteResource "subscription.operators.coreos.com" "kube-system" "ibm-management-ui"
+    orchestratorInstallPlan=`oc get InstallPlan -n openshift-operators | grep "ibm-management-orchestrator" | awk '{ print $1 }'`
+    deleteResource "InstallPlan" "openshift-operators" "${orchestratorInstallPlan}" "false" 300
     result=$(( result + $? ))
-    managementUICSV=`$ocOrKubectl get csv -n "kube-system" | grep "ibm-management-ui" | awk '{ print $1 }'`
-    deleteResource "csv" "kube-system" "${managementUICSV}"
+    hybridappInstallPlan=`oc get InstallPlan -n openshift-operators | grep "ibm-management-hybridapp" | awk '{ print $1 }'`
+    deleteResource "InstallPlan" "openshift-operators" "${hybridappInstallPlan}" "false" 300
     result=$(( result + $? ))
-
-    ibmManagementOpConfNS=`$ocOrKubectl get OperandConfig --all-namespaces=true | grep "ibm-management" | awk '{ print $1 }'`
-    deleteResource "OperandConfig" "${ibmManagementOpConfNS}" "ibm-management"
-    result=$(( result + $? ))
-
-    csSubNS=`$ocOrKubectl get subscription.operators.coreos.com --all-namespaces=true | grep "ibm-common-service-operator" | awk '{ print $1 }'`
-    csSub=`$ocOrKubectl get subscription.operators.coreos.com --all-namespaces=true | grep "ibm-common-service-operator" | awk '{ print $2 }'`
-    deleteResource "subscription.operators.coreos.com" "${csSubNS}" "${csSub}"
-    local result=$?
-
-    comServCSV=`$ocOrKubectl get csv -n openshift-operators | grep ibm-common-service-operator | awk '{ print $1 }'`
-    deleteResource "csv" "openshift-operators" "${comServCSV}"
-    result=$(( result + $? ))
-
-    deleteResource "OperandConfig" "ibm-common-services" "common-service"
-    result=$(( result + $? ))
-
-    odlmSubNS=`$ocOrKubectl get subscription.operators.coreos.com --all-namespaces=true | grep "operand-deployment-lifecycle-manager-app" | awk '{ print $1 }'`
-    deleteResource "subscription.operators.coreos.com" "${odlmSubNS}" "operand-deployment-lifecycle-manager-app"
-    result=$(( result + $? ))
-    
-    odlmCSV=`$ocOrKubectl get csv -n "${odlmSubNS}" | grep operand-deployment-lifecycle-manager | awk '{ print $1 }'`
-    deleteResource "csv" "${odlmSubNS}" "${odlmCSV}"
-    result=$(( result + $? ))
-    
     if [[ "${result}" -eq 0 ]]; then
-	echo "All remaining operators, CSVs, and subscriptions related to CP4MCM have been removed" | tee -a "$logpath"
+	echo "All remaining miscellaneous resources related to CP4MCM have been removed" | tee -a "$logpath"
 	return 1
     else
-	echo "$result operators, CSVs, or subscriptions related to CP4MCM may remain" | tee -a "$logpath"
+	echo "$result resources related to CP4MCM may remain" | tee -a "$logpath"
 	return 0
     fi
 }
+
 
 deleteRoute(){
     echo "Deleting vault-route in kube-system namespace"
@@ -751,13 +724,59 @@ postUninstallFunc() {
     result=$(( result + $? ))
     deleteSecrets
     result=$(( result + $? ))
-    deleteCRDs
+    deleteResource "secret" "ibmcloud-cluster-ca-cert" "kube-public"
     result=$(( result + $? ))
+    deleteResource "configmap" "ibmcloud-cluster-info" "kube-public"
+    result=$(( result + $? ))
+    deleteResource "secret" "management-monitoring" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-infrastructure-management" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-security-services" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-operations" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "openshift-operators" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "kube-system" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    #deleteCRDs
+    #result=$(( result + $? ))
     if [[ "${result}" -ne 0 ]]; then
 	return 1
 	echo "Did not successfully complete postUninstallCleanup" | tee -a "$logpath"
     else
 	echo "Successfully completed postUninstallCleanup" | tee -a "$logpath"
+	return 0
+    fi
+}
+
+secretConfigmapFunc() {
+    deleteRoute
+    local result=$?
+    deleteSecrets
+    result=$(( result + $? ))
+    deleteResource "secret" "ibmcloud-cluster-ca-cert" "kube-public"
+    result=$(( result + $? ))
+    deleteResource "configmap" "ibmcloud-cluster-info" "kube-public"
+    result=$(( result + $? ))
+    deleteResource "secret" "management-monitoring" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-infrastructure-management" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-security-services" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-operations" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "openshift-operators" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "kube-system" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    if [[ "${result}" -ne 0 ]]; then
+	return 1
+	echo "Did not successfully complete secretConfigmapCleanup" | tee -a "$logpath"
+    else
+	echo "Successfully completed secretConfigmapCleanup" | tee -a "$logpath"
 	return 0
     fi
 }
@@ -772,6 +791,8 @@ main(){
 	    preUninstallFunc; exit $? ;;
 	"postUninstallCleanup")
 	    postUninstallFunc; exit $? ;;
+	"secretConfigmapCleanup")
+	    secretConfigmapFunc; exit $? ;;
 	"customResourceCleanup")
 	    removeParticularCR "${operator}"; exit $? ;;	
 	"anyResourceCleanup")
