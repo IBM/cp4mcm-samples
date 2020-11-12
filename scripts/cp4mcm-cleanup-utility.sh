@@ -713,6 +713,37 @@ deleteRoute(){
     fi
 }
 
+
+secretConfigmapFunc() {
+    deleteRoute
+    local result=$?
+    deleteSecrets
+    result=$(( result + $? ))
+    deleteResource "secret" "ibmcloud-cluster-ca-cert" "kube-public"
+    result=$(( result + $? ))
+    deleteResource "configmap" "ibmcloud-cluster-info" "kube-public"
+    result=$(( result + $? ))
+    deleteResource "secret" "management-monitoring" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-infrastructure-management" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-security-services" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "management-operations" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "openshift-operators" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResource "secret" "kube-system" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    if [[ "${result}" -ne 0 ]]; then
+	return 1
+	echo "Did not successfully complete secretConfigmapCleanup" | tee -a "$logpath"
+    else
+	echo "Successfully completed secretConfigmapCleanup" | tee -a "$logpath"
+	return 0
+    fi
+}
+
 postUninstallFunc() {
     checkIfInstallationInstanceExists
     local result=$?
@@ -749,35 +780,6 @@ postUninstallFunc() {
     fi
 }
 
-secretConfigmapFunc() {
-    deleteRoute
-    local result=$?
-    deleteSecrets
-    result=$(( result + $? ))
-    deleteResource "secret" "ibmcloud-cluster-ca-cert" "kube-public"
-    result=$(( result + $? ))
-    deleteResource "configmap" "ibmcloud-cluster-info" "kube-public"
-    result=$(( result + $? ))
-    deleteResource "secret" "management-monitoring" "ibm-management-pull-secret" "true" 300
-    result=$(( result + $? ))
-    deleteResource "secret" "management-infrastructure-management" "ibm-management-pull-secret" "true" 300
-    result=$(( result + $? ))
-    deleteResource "secret" "management-security-services" "ibm-management-pull-secret" "true" 300
-    result=$(( result + $? ))
-    deleteResource "secret" "management-operations" "ibm-management-pull-secret" "true" 300
-    result=$(( result + $? ))
-    deleteResource "secret" "openshift-operators" "ibm-management-pull-secret" "true" 300
-    result=$(( result + $? ))
-    deleteResource "secret" "kube-system" "ibm-management-pull-secret" "true" 300
-    result=$(( result + $? ))
-    if [[ "${result}" -ne 0 ]]; then
-	return 1
-	echo "Did not successfully complete secretConfigmapCleanup" | tee -a "$logpath"
-    else
-	echo "Successfully completed secretConfigmapCleanup" | tee -a "$logpath"
-	return 0
-    fi
-}
 
 # end post uninstall stuff
 
