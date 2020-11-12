@@ -720,9 +720,7 @@ postUninstallFunc() {
     result=$(( result + $? ))
     echo "Delaying for 300 seconds after removal of CSV and Subscriptions"
     sleep 300s
-    deleteRoute
-    result=$(( result + $? ))
-    deleteSecrets
+    secretConfigmapFunc
     result=$(( result + $? ))
     deleteResource "secret" "ibmcloud-cluster-ca-cert" "kube-public"
     result=$(( result + $? ))
