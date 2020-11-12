@@ -51,3 +51,7 @@ All notable changes to this project will be documented in this file.
 ## [0.0.7] - 2020-10-27
 - Removed default arguments to uninstall.sh
   - `scripts/uninstall.sh`
+  
+## [0.0.8] - 2020-11-12
+- Updated cp4mcm-cleanup-utility.sh script to be less aggressive; it now leaves Common Services and ODLM alone
+  - `scripts/cp4mcm-cleanup-utility.sh`
