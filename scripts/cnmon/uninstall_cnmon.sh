@@ -129,6 +129,19 @@ else
         kubectl delete uas.ua.ibm.com -n $namespace $ua
       fi
     fi
+  else
+    echo "Search and delete ua-mgmt..."
+    uascrd=$(kubectl api-resources --api-group='ua.ibm.com' --no-headers=true | grep uas)
+    if [ ! -z "$uascrd" ]
+    then
+      uamgmt=$(kubectl get uas.ua.ibm.com ua-mgmt -n $namespace --no-headers=true --ignore-not-found=true | grep "ua-" | awk '{print $1}')
+      if [ -z "$uamgmt" ]
+      then
+        echo "No ua-mgmt found."
+      else
+        kubectl delete uas.ua.ibm.com -n $namespace $uamgmt
+      fi
+    fi
   fi
   
   echo "Search and delete k8sdc..."
