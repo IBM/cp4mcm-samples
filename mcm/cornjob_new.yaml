@@ -1,0 +1,190 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: refresh
+  namespace: kube-system
+spec:
+  schedule: "0 */1 * * *"
+  failedJobsHistoryLimit: 1
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: default
+          containers:
+          - name: refresh
+            image: ibmcom/kubectl:v1.13.9
+            command:
+            - /bin/sh
+            - -c
+            - |
+                # process of refresh certificate and key
+                start(){
+                  for csrName in `kubectl get clusterjoinrequest | awk '{print $1}' | tail -n +2`
+                  do
+                    clusterName=`kubectl get clusterjoinrequest $csrName -o jsonpath='{.spec.clusterName}'`
+                    clusterNamespace=`kubectl get clusterjoinrequest $csrName -o jsonpath='{.spec.clusterNameSpace}'`
+                    Existcluster=`kubectl get cluster -n $clusterNamespace | awk '{print $1}' | tail -n +2`
+                    clusterStatus=`kubectl get cluster -n $clusterNamespace | awk {'print $4'} | tail -n +2`
+                    if [[ "$clusterName" != "$Existcluster" || "$clusterStatus" != "Ready" ]]; then
+                        echo "cluster $clusterName does not exist or offline"
+                        continue
+                    fi
+                    echo "cluster $clusterName certificate refreshing"
+                    expiredTime
+                    retval=$?
+                    if [ "$retval" == 0 ]; then
+                        generateKey
+                        createWork
+                        checkWork
+                        retval=$?
+                        if [ "$retval" == 0 ]; then
+                          refreshCSR
+                        fi
+                    fi
+                  done
+                }
+
+                # get certificate expired time, if the expiration time is less than 1 day from now, return true
+                expiredTime(){
+                  echo `kubectl get clusterjoinrequest $csrName -o jsonpath='{.status.csrStatus.certificate}'` | base64 -d > cert.crt
+                  notAfter=`openssl x509 -in cert.crt -noout -enddate`
+                  expirdate=`echo ${notAfter#*=}`
+                  expirtime=`date -d "$expirdate" +"%s"`
+                  Now=`date -u '+%a, %d %b %Y %T GMT'`
+                  Nowtime=`date -d "$Now" +"%s"`
+                  duretion=$(($(date +%s -d "$expirdate") - $(date +%s -d "$Now")))
+                  if [ $duretion -le 259200 ]; then
+                      return 0
+                  else
+                      return 1
+                  fi
+                }
+
+                #generate privateKey for managed cluster and csrKey for hub CSR
+                generateKey(){
+                cat > ./csr.sh << EOF
+                openssl ecparam -name prime256v1 -genkey -noout -out my.key.pem
+                openssl req -new -sha256 -key my.key.pem -out my.csr
+                EOF
+                chmod +x csr.sh
+                echo -e "\n\n\nhcm:clusters\n\nhcm:clusters:$clusterName:$clusterNamespace\n\n\n" | ./csr.sh
+                requestKey=`base64 my.csr -w 0`
+                privateKey=`base64 my.key.pem -w 0`
+                }
+
+                #create a work to deliver refresh.sh to managed cluster, 
+                #please replace the image when refresh.sh changed
+                createWork(){
+                cat > ./refresh.yaml << EOF
+                apiVersion: mcm.ibm.com/v1alpha1
+                kind: Work
+                metadata:
+                  name: refresh
+                  namespace: $clusterNamespace
+                spec:
+                  cluster:
+                    name: $clusterName
+                  actionType: Create
+                  type: Action
+                  kube:
+                    resource: job
+                    name: refresh
+                    namespace: multicluster-endpoint
+                    template:
+                      apiVersion: batch/v1
+                      kind: Job
+                      metadata:
+                        name: refresh
+                        namespace: multicluster-endpoint
+                      spec:
+                        backoffLimit: 0
+                        template:
+                          spec:
+                            containers:
+                            - name: refresh
+                              image: ibmcom/kubectl:v1.13.9
+                              command:
+                              - /bin/sh
+                              - -c
+                              - |
+                                  sleep 30s
+                                  kubectl get secret endpoint-connmgr-hub-kubeconfig -n multicluster-endpoint -o jsonpath='{.data.kubeconfig}' | base64 -d > kubeconfig.yaml
+                                  sed -i '\$d' kubeconfig.yaml
+                                  echo "    client-key-data: $privateKey" >> kubeconfig.yaml
+                                  kubeconfig=\`cat kubeconfig.yaml | base64 -w 0\`
+                                  kubectl patch secret endpoint-connmgr-hub-kubeconfig -p '{"data":{"kubeconfig":"'\$kubeconfig'"}}' -n multicluster-endpoint
+                                  sleep 5s
+                                  kubectl delete job refresh -n multicluster-endpoint
+                            restartPolicy: Never
+                            serviceAccountName: ibm-multicluster-endpoint-operator
+                EOF
+
+                kubectl create -f refresh.yaml --validate=false
+
+                }
+
+                checkWork(){
+                  sleep 3s
+                  i=0
+                  while (( $i<=10 ))
+                  do
+                    work_status=`kubectl get work refresh -n $clusterNamespace | awk '{print $4}' | sed -n "2, 1p"`
+                    if [ "Completed" == "${work_status}" ]; then
+                        kubectl delete work refresh -n $clusterNamespace
+                        echo "refresh key success"
+                        return 0
+                        break
+                    else
+                        if [ $i == 10 ]; then
+                          kubectl delete work refresh -n $clusterNamespace
+                          echo "refresh key failed"
+                          return 1
+                        else
+                          i=$(($i + 1))
+                          echo $i
+                          sleep 3s
+                        fi
+                    fi
+                  done
+                }
+
+                refreshCSR(){
+                  uid=`kubectl get csr $csrName -o jsonpath='{.metadata.ownerReferences[0].uid}'`
+                  kubectl delete csr $csrName
+                cat > ./csr.yaml << EOF
+                apiVersion: certificates.k8s.io/v1beta1
+                kind: CertificateSigningRequest
+                metadata:
+                  name: $csrName
+                  ownerReferences:
+                  - apiVersion: mcm.ibm.com/__internal
+                    blockOwnerDeletion: true
+                    controller: true
+                    kind: ClusterJoinRequest
+                    name: $csrName
+                    uid: $uid
+                spec:
+                  groups:
+                  - system:serviceaccounts
+                  - system:serviceaccounts:kube-system
+                  - system:authenticated
+                  request: $requestKey
+                  usages:
+                  - digital signature
+                  - key encipherment
+                  - client auth
+                  username: system:serviceaccount:kube-system:default
+                EOF
+                  kubectl create -f csr.yaml
+                  kubectl certificate approve ${csrName}
+                  echo "refresh cluster $clusterName success"
+                }
+
+                #------------------------------------------------------------------------
+                # main function
+                #------------------------------------------------------------------------
+                start
+
+          restartPolicy: OnFailure
