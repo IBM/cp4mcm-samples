@@ -64,6 +64,8 @@ helpFunc() {
        echo "                                      Usage: $0 --kubeconfigPath /path/to/kubeconfig --mode customResourceCleanup --IMInstall"
        echo "                                      Usage: $0 --kubeconfigPath /path/to/kubeconfig --mode customResourceCleanup --VMPolicyAnsible"
        echo
+       echo "     secretConfigmapCleanup           Description: Remove secrets and configmaps left after uninstalling the CP4MCM Custom Resource"
+       echo "                                      Usage: $0 --kubeconfigPath /path/to/kubeconfig --mode secretConfigmapCleanup"
        echo
        echo "     anyResourceCleanup               Description: Remove an arbitrary kubernetes resource by specifying its Kind, Name, and Namespace; removes all finalizers"
        echo "                                      Usage: $0 --kubeconfigPath /path/to/kubeconfig --mode anyResourceCleanup --resourceKind deployment --resourceName mydply --resourceNamespace myNS"
