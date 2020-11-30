@@ -53,5 +53,5 @@ All notable changes to this project will be documented in this file.
   - `scripts/uninstall.sh`
   
 ## [0.0.8] - 2020-11-30
-- Updated cp4mcm-cleanup-utility.sh script to be less aggressive; it now leaves Common Services and ODLM alone; added new mode called secretConfigmapCleanup that only deletes secrets and configmaps
+- Updated cp4mcm-cleanup-utility.sh script to be more generic
   - `scripts/cp4mcm-cleanup-utility.sh`
