@@ -5,9 +5,54 @@ if [ ! -z $1 ]
 then
   namespace=$1
 fi
-echo "Uninstall Cloud Native Monitoring from namespace $namespace..."
 
-echo "Ensure that you have changed the label to ibm.com/cloud-native-monitoring: \"disabled\" at IBM Cloud Pak® for Multicloud Management hub cluster for this managed cluster"
+kubectl cluster-info
+if [ ! $? -eq 0 ]
+then
+  echo "Log in to the cluster and rerun the script."
+  exit 1
+fi
+
+mcmcore_ns=multicluster-endpoint
+rhacm_ns=open-cluster-management-agent-addon
+
+mcmnscnt=$(kubectl get ns $mcmcore_ns --no-headers=true --ignore-not-found=true | wc -l)
+rhacmnscnt=$(kubectl get ns $rhacm_ns --no-headers=true --ignore-not-found=true | wc -l)
+
+if [ $mcmnscnt -eq 0 -a $rhacmnscnt -eq 0 ]
+then
+  echo "This cluster is not currently managed by IBM Cloud Pak® for Multicloud Management hub cluster."
+  echo "Do you want to continue [ y or n; \"n\" is default ]?"
+  read REPLY
+  case $REPLY in
+    y*|Y*) ;;
+
+    *) exit 0
+    ;;
+  esac
+fi
+
+if [ $mcmnscnt -gt 0 -o $rhacmnscnt -gt 0 ]
+then
+  if [ $mcmnscnt -gt 0 ]
+  then
+    mcm_ns=$mcmcore_ns
+    secret_name=klusterlet-bootstrap
+    helmrelgrp=app.ibm.com
+  else
+    mcm_ns=$rhacm_ns
+    secret_name=search-hub-kubeconfig
+    helmrelgrp=apps.open-cluster-management.io
+  fi
+  server_url=$(kubectl get secret $secret_name --ignore-not-found=true -n $mcm_ns -o yaml | grep '  kubeconfig' | awk '{ print $2 }' | base64 -d | grep '    server' | awk '{ print $2 }')
+fi
+
+echo ""
+echo "Uninstall Cloud Native Monitoring from namespace $namespace..."
+echo ""
+echo "Ensure that you have changed the label to ibm.com/cloud-native-monitoring: \"disabled\""
+echo "at IBM Cloud Pak® for Multicloud Management hub cluster $server_url"
+echo "for this managed cluster"
 
 echo "Do you want to continue [ y or n; \"n\" is default ]?"
 read REPLY
@@ -18,16 +63,46 @@ case $REPLY in
   ;;
 esac
 
-kubectl cluster-info
-if [ ! $? -eq 0 ]
-then
-  echo "Log in to the cluster and rerun the script."
-  exit 1
-fi
+echo ""
+echo "Do you want to delete UA custom resources [ y or n; \"n\" is default ]?"
+read REPLY
+case $REPLY in
+  y*|Y*) 
+    keep_uacr=false
+    ;;
+
+  *) 
+    keep_uacr=true
+    ;;
+esac
+
+function search_delete_helmrel(){
+  helmrelgrp=$1
+  helmresource=$(kubectl api-resources --api-group=$helmrelgrp --no-headers=true | grep helmreleases)
+  if [ ! -z "$helmresource" ]
+    then
+    helmrel=$(kubectl get helmrelease.$helmrelgrp -n $namespace --no-headers=true --ignore-not-found=true | awk '{print $1}' | grep $cnmonprefix)
+    if [ -z "$helmrel" ]
+    then
+      echo "No helmrelease.$helmrelgrp found."
+    else
+      kubectl patch helmrelease.$helmrelgrp $helmrel -p '{"metadata":{"finalizers":[]}}' --type merge -n $namespace
+      helmrel1=$(kubectl get helmrelease.$helmrelgrp -n $namespace --no-headers=true --ignore-not-found=true | awk '{print $1}' | grep $cnmonprefix)
+      if [ ! -z "$helmrel1" ]
+      then
+        kubectl patch helmrelease.$helmrelgrp $helmrel -p '{"metadata":{"finalizers":[]}}' --type merge -n $namespace
+      fi
+      helmrel2=$(kubectl get helmrelease.$helmrelgrp -n $namespace --no-headers=true --ignore-not-found=true | awk '{print $1}' | grep $cnmonprefix)
+      if [ ! -z "$helmrel2" ]
+      then
+        kubectl delete helmrelease.$helmrelgrp $helmrel -n $namespace
+      fi
+    fi
+  fi
+}
 
 echo ""
 echo "Deleting namespaced resources..."
-
 
 nscnt=$(kubectl get ns $namespace --no-headers=true --ignore-not-found=true | wc -l)
 if [ $nscnt -eq 0 ]
@@ -37,42 +112,35 @@ else
   cnmonprefix=ibm-cp4mcm-cloud-native
   
   echo "Search and delete helmrelease..."
-  helmrelgrp=app.ibm.com
-  helmrelcrd=$(kubectl api-resources --api-group='app.ibm.com' --no-headers=true | grep helmreleases)
-  if [ -z "$helmrelcrd" ]
-  then
-    helmrelgrp=apps.open-cluster-management.io
-  fi
-
-  helmrel=$(kubectl get helmrelease.$helmrelgrp -n $namespace --no-headers=true --ignore-not-found=true | awk '{print $1}' | grep $cnmonprefix)
-  if [ -z "$helmrel" ]
-  then
-    echo "No helmrelease found."
-  else
-    kubectl patch helmrelease.$helmrelgrp $helmrel -p '{"metadata":{"finalizers":[]}}' --type merge -n $namespace
-    helmrel1=$(kubectl get helmrelease.$helmrelgrp -n $namespace --no-headers=true --ignore-not-found=true | awk '{print $1}' | grep $cnmonprefix)
-    if [ ! -z "$helmrel1" ]
-    then
-      kubectl patch helmrelease.$helmrelgrp $helmrel -p '{"metadata":{"finalizers":[]}}' --type merge -n $namespace
-    fi
-    helmrel2=$(kubectl get helmrelease.$helmrelgrp -n $namespace --no-headers=true --ignore-not-found=true | awk '{print $1}' | grep $cnmonprefix)
-    if [ ! -z "$helmrel2" ]
-    then
-      kubectl delete helmrelease.$helmrelgrp $helmrel -n $namespace
-    fi
-  fi
-
+  search_delete_helmrel app.ibm.com
+  search_delete_helmrel apps.open-cluster-management.io
   
-  echo "Search and delete ua..."
-  uascrd=$(kubectl api-resources --api-group='ua.ibm.com' --no-headers=true | grep uas)
-  if [ ! -z "$uascrd" ]
+  if [ $keep_uacr = false ]
   then
-    ua=$(kubectl get uas.ua.ibm.com -n $namespace --no-headers=true --ignore-not-found=true | grep "ua-" | awk '{print $1}')
-    if [ -z "$ua" ]
+    echo "Search and delete ua..."
+    uascrd=$(kubectl api-resources --api-group='ua.ibm.com' --no-headers=true | grep uas)
+    if [ ! -z "$uascrd" ]
     then
-      echo "No ua found."
-    else
-      kubectl delete uas.ua.ibm.com -n $namespace $ua
+      ua=$(kubectl get uas.ua.ibm.com -n $namespace --no-headers=true --ignore-not-found=true | grep "ua-" | awk '{print $1}')
+      if [ -z "$ua" ]
+      then
+        echo "No ua found."
+      else
+        kubectl delete uas.ua.ibm.com -n $namespace $ua
+      fi
+    fi
+  else
+    echo "Search and delete ua-mgmt..."
+    uascrd=$(kubectl api-resources --api-group='ua.ibm.com' --no-headers=true | grep uas)
+    if [ ! -z "$uascrd" ]
+    then
+      uamgmt=$(kubectl get uas.ua.ibm.com ua-mgmt -n $namespace --no-headers=true --ignore-not-found=true | grep "ua-" | awk '{print $1}')
+      if [ -z "$uamgmt" ]
+      then
+        echo "No ua-mgmt found."
+      else
+        kubectl delete uas.ua.ibm.com -n $namespace $uamgmt
+      fi
     fi
   fi
   
@@ -134,17 +202,30 @@ fi
 echo ""
 echo "Deleting related non-namespaced resources..."
 
-echo "Search and deleting crd..."
-crd=$(kubectl get crd k8sdcs.ibmcloudappmgmt.com uas.ua.ibm.com --no-headers=true --ignore-not-found=true | awk '{print $1}')
+echo "Search and deleting k8sdcs crd..."
+crd=$(kubectl get crd k8sdcs.ibmcloudappmgmt.com --no-headers=true --ignore-not-found=true | awk '{print $1}')
 if [ -z "$crd" ]
 then
-  echo "No related crd found."
+  echo "No k8sdcs crd found."
 else
   kubectl delete crd $crd
 fi
 
+if [ $keep_uacr = false ]
+then
+  echo ""
+  echo "Search and deleting uas crd..."
+  crd=$(kubectl get crd uas.ua.ibm.com --no-headers=true --ignore-not-found=true | awk '{print $1}')
+  if [ -z "$crd" ]
+  then
+    echo "No uas crd found."
+  else
+    kubectl delete crd $crd
+  fi
+fi
+
 echo "Search and deleting clusterrolebinding..."
-clusterrolebinding=$(kubectl get clusterrolebinding node-k8sdc-cr-k8monitor view-k8sdc-cr-k8monitor agentoperator ua-operator reloader-role-binding k8sdc-operator --no-headers=true --ignore-not-found=true | awk '{print $1}')
+clusterrolebinding=$(kubectl get clusterrolebinding node-k8sdc-cr-k8monitor view-k8sdc-cr-k8monitor agentoperator ibm-dc-autoconfig-operator ua-operator reloader-role-binding k8sdc-operator --no-headers=true --ignore-not-found=true | awk '{print $1}')
 if [ -z "$clusterrolebinding" ]
 then
   echo "No related clusterrolebinding found."
@@ -171,7 +252,7 @@ else
 fi
 
 echo ""
-if [ ! $nscnt -eq 0 ]
+if [ ! $nscnt -eq 0 -a $keep_uacr = false ]
 then
   echo "Deleting namespace $namespace..."
   echo "Running pods in namespace $namespace"
@@ -192,7 +273,7 @@ then
   echo "Make sure pods are terminated..."
   i=0
   podcnt=$(kubectl get pods -n $namespace --no-headers=true --ignore-not-found=true | wc -l)
-  while [ $podcnt -gt 0 ] && [ $i -lt 18 ]
+  while [ $podcnt -gt 0 -a $i -lt 18 ]
   do
     echo "Waiting 10 seconds..."
     sleep 10
