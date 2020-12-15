@@ -1,0 +1,44 @@
+apiVersion: ua.ibm.com/v1alpha1
+kind: UA
+metadata:
+  name: ua-mgmt
+spec:
+  builtin-plugins: lwdc,icam,opentracing,linuxos,openmetrics
+  discover-interval: 10
+  discoveries:
+    - name: nginx
+      pattern: nginx
+      type: image-match
+    - name: redis
+      pattern: redis
+      type: image-match
+    - name: openshift
+      pattern: openshift-release-dev
+      type: image-match
+    - name: ibmmq
+      pattern: mq
+      type: image-match
+    - name: ibmace
+      pattern: ace
+      type: image-match
+    - name: ibmapic
+      pattern: apim
+      type: image-match
+    - name: blockchain
+      type: never
+    - name: cloudant
+      type: never
+    - name: dotnetcore
+      type: never
+    - name: prometheus_client
+      type: never 
+  repo: "REPLACE_WITH_YOUR_REPO_ROUTE"
+  ibmAgentConfigSecret: "dc-secret"
+  ibmAgentHTTPSSecret: "ibm-agent-https-secret"
+  image: REPLACE_WITH_IMAGE_FULL_PATH
+  interval: 1m
+  resources:
+    memory: 512Mi
+    cpu: 500m
+
+
