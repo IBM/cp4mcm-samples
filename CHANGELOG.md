@@ -55,3 +55,7 @@ All notable changes to this project will be documented in this file.
 ## [0.0.8] - 2020-11-30
 - Updated cp4mcm-cleanup-utility.sh script to be more generic
   - `scripts/cp4mcm-cleanup-utility.sh`
+
+## [0.0.9] - 2020-12-17
+- Added grc-policy-updates.sh script to update GRC policy attributes when upgrading from mcm core 2.0 to Red Hat Advanced Cluster Management version 2.1
+  - `scripts/grc-policy-updates.sh`
