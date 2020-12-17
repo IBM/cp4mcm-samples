@@ -57,5 +57,5 @@ All notable changes to this project will be documented in this file.
   - `scripts/cp4mcm-cleanup-utility.sh`
 
 ## [0.0.9] - 2020-12-17
-- Added grc-policy-updates.sh script to update GRC policy attributes when upgrading from mcm core 2.0 to RHACM 2.1
+- Added grc-policy-updates.sh script to update GRC policy attributes when upgrading from mcm core 2.0 to Red Hat Advanced Cluster Management version 2.1
   - `scripts/grc-policy-updates.sh`
