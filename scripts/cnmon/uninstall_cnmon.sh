@@ -225,22 +225,38 @@ then
 fi
 
 echo "Search and deleting clusterrolebinding..."
-clusterrolebinding=$(kubectl get clusterrolebinding node-k8sdc-cr-k8monitor view-k8sdc-cr-k8monitor agentoperator ibm-dc-autoconfig-operator ua-operator reloader-role-binding k8sdc-operator --no-headers=true --ignore-not-found=true | awk '{print $1}')
-if [ -z "$clusterrolebinding" ]
-then
-  echo "No related clusterrolebinding found."
-else
-  kubectl delete clusterrolebinding $clusterrolebinding
-fi
+clusterrolebinding=(
+  node-k8sdc-cr-k8monitor
+  view-k8sdc-cr-k8monitor
+  ua-operator
+  k8sdc-operator
+  reloader-role-binding
+  ibm-dc-autoconfig-operator
+  agentoperator
+)
 
-echo "Search and deleting clusterrole..."
-clusterrole=$(kubectl get clusterrole k8sdc-cr-k8monitor ua-operator reloader-role --no-headers=true --ignore-not-found=true | awk '{print $1}')
-if [ -z "$clusterrole" ]
-then
-  echo "No related clusterrole found."
-else
-  kubectl delete clusterrole $clusterrole
-fi
+for i in "${clusterrolebinding[@]}"; do
+  kubectl get clusterrolebinding ${i} > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    continue
+  fi
+  echo "Deleting clusterrolebinding ${i}"
+  kubectl delete clusterrolebinding $i
+done
+
+clusterrole=(
+  k8sdc-cr-k8monitor
+  ua-operator
+  reloader-role
+)
+for i in "${clusterrole[@]}"; do
+  kubectl get clusterrole ${i} > /dev/null 2>&1
+  if [ $? -ne 0 ]; then
+    continue
+  fi
+  echo "Deleting clusterrole ${i}"
+  kubectl delete clusterrole $i
+done
 
 echo "Search and deleting podsecuritypolicy..."
 podsecuritypolicy=$(kubectl get podsecuritypolicy ua-operator --no-headers=true --ignore-not-found=true | awk '{print $1}')
