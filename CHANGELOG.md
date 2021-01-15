@@ -59,3 +59,7 @@ All notable changes to this project will be documented in this file.
 ## [0.0.9] - 2020-12-17
 - Added grc-policy-updates.sh script to update GRC policy attributes when upgrading from mcm core 2.0 to Red Hat Advanced Cluster Management version 2.1
   - `scripts/grc-policy-updates.sh`
+
+## [0.0.10] - 2021-1-15
+- Added vaultfeeder tool to configure HashiCorp Vault and push target VM credentials in it for IBM CloudPak for Multicloud Management VM policy controller 2.0 onwards.
+  - `vaultfeeder`
