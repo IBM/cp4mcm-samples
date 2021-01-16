@@ -6,11 +6,11 @@ Created on Nov 10, 2020
 
 This script is to 
 # Configure Vault
-1) Configure HashiCorp valut for IBM CloudPak Multicloud Management - VM Policy controller.
+1) Configure HashiCorp vault for IBM CloudPak Multicloud Management - VM Policy controller.
 # Feed credentials in three steps
-2) (Step 1) Create an empty template to fill vm credentials.
-3) (Step 2) Encode private ssh-keys in base64 format and print in the console or create template using those keys (skipping step 1). This is useful to fill the ssh keys in the empty template. 
-4) (Step 3) Push all credentials from template to HashiCorp Vault.
+2) (Step 1) Create an empty template to fill VM credentials.
+3) (Step 2) Encode private ssh-keys in base64 format and print in the console or create a template using those keys (skipping step 1). This is useful to fill the ssh keys in the empty template. 
+4) (Step 3) Push all credentials from the template to HashiCorp Vault.
 
 Input to script 
 - Vault URL
@@ -45,10 +45,10 @@ class HashiCorpVault(object):
         usage_text = '''vaultfeeder <command> [options]
 
        vaultfeeder commands are: 
-       template     Create an empty yaml template to add list of target virtual machines information and credentials
+       template     Create an empty yaml template to add a list of target virtual machines information and credentials
        configure    Configure HashiCorp vault for IBM Cloud Pak for Multicloud Management
        feed         Push yaml template data to HashiCorp vault
-       base64       Encode all ssh private keys from provided directory in base64 format
+       base64       Encode all ssh private keys from a provided directory in base64 format
        '''
 
         parser = argparse.ArgumentParser(description=description_text,usage=usage_text)
@@ -68,7 +68,7 @@ class HashiCorpVault(object):
 
     # (Command) feed  
     def feed(self):
-        description_text = 'Push vm information and credentials data from yaml template to HashiCorp vault'
+        description_text = 'Push VM information and credentials data from yaml template to HashiCorp vault.'
         parser = argparse.ArgumentParser(description=description_text)
         
         parser.add_argument("-u", "--vault_url", help="[Required] hashiCorpo vault URL", required=True)
@@ -97,7 +97,7 @@ class HashiCorpVault(object):
         se_url = self.vault_url + '/v1/' + self.get_secrets_path()
         
         if not self.is_policy_present():
-            print("Error: Given secret engine %s is not valid or does not have policy setup. Please configure the vault first using 'vaultfeeder configure' command" %(self.policy_name))
+            print("Error: Given secret engine %s is not valid or does not have policy setup. Please configure the vault first using 'vaultfeeder configure' command." %(self.policy_name))
             exit(1)
 
         app_token = self.create_policy_app_token()
@@ -165,7 +165,7 @@ class HashiCorpVault(object):
     def template(self):
         """It is a command to create an empty template. User will add VM information in the template. 
         """
-        description_text = 'Create an empty yaml template to add list of target virtual machines information and credential'
+        description_text = 'Create an empty yaml template to add list of target virtual machines information and credential.'
         parser = argparse.ArgumentParser(description=description_text)
         
         parser.add_argument("-p", "--template_path", help="[Optional] target template name. If not provided default name is 'sample_vm_creds_template.yaml'")
@@ -185,8 +185,8 @@ class HashiCorpVault(object):
     # (Command) congigure
     def configure(self):
         description_text = '''Configure HashiCorp vault for IBM Cloud Pak for Multicloud Management
-        1) Create and enable new key value secret engine
-        2) Add vault policy for newly created secret engine
+        1) Create and enable a new key-value secret engine.
+        2) Add vault policy for newly created secret engine.
         '''
         parser = argparse.ArgumentParser(description=description_text)
         
@@ -256,9 +256,9 @@ class HashiCorpVault(object):
     # Curl error logs
     def query_errors(self,query):
         if 'SSL_ERROR_SYSCALL' in str(query):
-            return "ERROR: Most probably Vault service is not running or unreachable."
+            return "ERROR: Most probably, the Vault service is not running or unreachable."
         if 'Could not resolve host' in str(query):
-            return "ERROR: Check Vault URL"
+            return "ERROR: Check Vault URL."
 
     def create_enable_secret_kv_engine(self):
         query_url = self.vault_url + '/v1/sys/mounts/' + self.policy_name 
@@ -343,7 +343,7 @@ class HashiCorpVault(object):
         self.policy_name = 'hybrid-grc'
         self.secrets_path = '/data/ssh-keys/vm/'
         # Define the program description
-        description_text = 'Encode and print all ssh private keys from provided directory in base64 format'
+        description_text = 'Encode and print all ssh private keys from a provided directory in base64 format.'
         
         # Define usage
         usage_text = '''vaultfeeder base64 <subcommand> [options]
@@ -369,7 +369,7 @@ class HashiCorpVault(object):
 
     # (Sub command of base64) build
     def build(self):
-        description_text = '''Encode all ssh private keys from provided directory in base64 format, create an empty template and add keys in it'''
+        description_text = '''Encode all ssh private keys from a provided directory in base64 format, create an empty template and add keys in it.'''
         parser = argparse.ArgumentParser(description=description_text)
 
         parser.add_argument("-k", "--ssh_key_dir", help="[Required] private ssh keys directory path", required=True)
