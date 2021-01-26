@@ -197,6 +197,15 @@ else
   else
     kubectl delete secret $cnmonsec -n $namespace
   fi
+  
+  echo "Search and delete UA job pod..."
+  uajobpod=$(kubectl get pod -l app=ua-operator -n $namespace --no-headers=true --ignore-not-found=true | awk '{print $1}')
+  if [ -z "$uajobpod" ]
+  then
+    echo "No UA job pod found."
+  else
+    kubectl delete po $uajobpod -n $namespace
+  fi
 fi
 
 echo ""
@@ -244,6 +253,7 @@ for i in "${clusterrolebinding[@]}"; do
   kubectl delete clusterrolebinding $i
 done
 
+echo "Search and deleting clusterrole..."
 clusterrole=(
   k8sdc-cr-k8monitor
   ua-operator
