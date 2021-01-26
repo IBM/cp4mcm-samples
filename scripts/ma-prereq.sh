@@ -51,12 +51,12 @@ sudo mount -o lowerdir=/lib/modules,upperdir=/opt/modules,workdir=/opt/modules.w
 
 sudo setenforce 0
 
-repo_url_1=http://ftp.heanet.ie/pub/centos/8/BaseOS/x86_64/os/
-repo_url_2=http://vault.centos.org/8.1.1911/BaseOS/x86_64/os/
+repo_url_1=https://ftp.heanet.ie/pub/centos/8/BaseOS/x86_64/os/
+repo_url_2=https://vault.centos.org/VERSION_PLACEHOLDER/BaseOS/x86_64/os/
 
 if [[ \\\\\\\$arch == \\\\\\\"ppc64le\\\\\\\" ]]; then
-    repo_url_1=http://ftp.heanet.ie/pub/centos/8/BaseOS/ppc64le/os/
-    repo_url_2=http://vault.centos.org/8.1.1911/BaseOS/ppc64le/os/
+    repo_url_1=https://ftp.heanet.ie/pub/centos/8/BaseOS/ppc64le/os/
+    repo_url_2=https://vault.centos.org/VERSION_PLACEHOLDER/BaseOS/ppc64le/os/
 fi
 
 
@@ -64,6 +64,8 @@ bash -c \\\\\\\"
 
 src_kernel_version=\\\\\\\$kernel_version
 rename_required=0
+versions=\\\\\\\\\\\\\\\`curl -sk https://vault.centos.org/ | grep -E '<a href=.8\.[0-9]+\.[0-9]+/.>8\.[0-9]+\.[0-9]+/</a>' | sed 's@.*href=.@@g' | sed 's@/..*@@g'\\\\\\\\\\\\\\\`
+IFS=\\\\\\\\\\\\\\\$'\\\\\\\\\\\\\\\\n'
 
 ###########################################
 #   Trial 1:  download rpm & install
@@ -77,12 +79,17 @@ if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
     fi
 fi
 
-if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
-    echo Trying \\\\\\\${repo_url_2}...
-    status_code=\\\\\\\\\\\\\\\`curl --write-out %{http_code} -sk --output /etc/kernel-devel-\\\\\\\${kernel_version}.rpm \\\\\\\${repo_url_2}Packages/kernel-devel-\\\\\\\${kernel_version}.rpm\\\\\\\\\\\\\\\`
-    if [[ "\\\\\\\\\\\\\\\$status_code" -eq 200 ]] ; then
-        rpm2cpio /etc/kernel-devel-\\\\\\\${kernel_version}.rpm | cpio -id
-    fi
+if [[ ! -d \\\\\\\$kernel_header_dir ]]; then   
+    for line in \\\\\\\\\\\\\\\$versions
+    do
+        repo_url_alt=\\\\\\\\\\\\\\\`echo \\\\\\\${repo_url_2} | sed \\\\\\\\\\\\\\\"s/VERSION_PLACEHOLDER/\\\\\\\\\\\\\\\$line/g\\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\`
+        echo Trying \\\\\\\\\\\\\\\$repo_url_alt...
+        status_code=\\\\\\\\\\\\\\\`curl --write-out %{http_code} -sk --output /etc/kernel-devel-\\\\\\\${kernel_version}.rpm \\\\\\\\\\\\\\\${repo_url_alt}Packages/kernel-devel-\\\\\\\${kernel_version}.rpm\\\\\\\\\\\\\\\`
+        if [[ "\\\\\\\\\\\\\\\$status_code" -eq 200 ]] ; then
+            rpm2cpio /etc/kernel-devel-\\\\\\\${kernel_version}.rpm | cpio -id
+            break
+        fi
+    done
 fi
 
 ###########################################
@@ -104,17 +111,21 @@ if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
 fi
 
 if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
-    echo Trying \\\\\\\${repo_url_2}...
-    found_kernel_version=\\\\\\\\\\\\\\\`curl -sk '\\\\\\\${repo_url_2}Packages/?C=M;O=A' | grep kernel-devel-\\\\\\\${kernel_major_version} | tail -n 1 | sed 's/.*kernel-devel-\(.*\).rpm.*/\1/g'\\\\\\\\\\\\\\\`
-    if [[ ! -z "\\\\\\\\\\\\\\\$found_kernel_version" ]] ; then
-        status_code=\\\\\\\\\\\\\\\`curl --write-out %{http_code} -sk --output /etc/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm \\\\\\\${repo_url_2}Packages/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm\\\\\\\\\\\\\\\`
+    for line in \\\\\\\\\\\\\\\$versions
+    do
+        repo_url_alt=\\\\\\\\\\\\\\\`echo \\\\\\\${repo_url_2} | sed \\\\\\\\\\\\\\\"s/VERSION_PLACEHOLDER/\\\\\\\\\\\\\\\$line/g\\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\`
+        echo Trying \\\\\\\\\\\\\\\$repo_url_alt...
+        found_kernel_version=\\\\\\\\\\\\\\\`curl -sk \\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\${repo_url_alt}Packages/?C=M;O=A\\\\\\\\\\\\\\\" | grep kernel-devel-\\\\\\\${kernel_major_version} | tail -n 1 | sed 's/.*kernel-devel-\(.*\).rpm.*/\1/g'\\\\\\\\\\\\\\\`
+        if [[ ! -z "\\\\\\\\\\\\\\\$found_kernel_version" ]] ; then
+        status_code=\\\\\\\\\\\\\\\`curl --write-out %{http_code} -sk --output /etc/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm \\\\\\\\\\\\\\\${repo_url_alt}Packages/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm\\\\\\\\\\\\\\\`
         if [[ "\\\\\\\\\\\\\\\$status_code" -eq 200 ]] ; then
             rpm2cpio /etc/kernel-devel-\\\\\\\\\\\\\\\${found_kernel_version}.rpm | cpio -id
             src_kernel_version=\\\\\\\\\\\\\\\${found_kernel_version}
             rename_required=1
+            break
         fi
     fi
-    
+    done 
 fi
 
 ###########################################
