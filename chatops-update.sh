@@ -35,7 +35,7 @@ parse_commandline()
             echo "Slack hubot token HUBOT_SLACK_TOKEN:  $new_slack_token"   
             prefix="xoxb"
             if [[ $new_slack_token != $prefix* ]];then
-                echo "ERROR: The Slack Hubot token format is not correct, the Slack Hubot token should be the string start with xoxb "  | tee -a "$logpath"
+                echo "ERROR: The Slack Hubot token format is not correct, the Slack Hubot token must be the string start with xoxb "  | tee -a "$logpath"
                 exit 1
             fi
             ;; 
@@ -44,7 +44,7 @@ parse_commandline()
             echo "PagerDuty REST API key:  $new_pd_apikey"  
             string_lenth=20
             if [[ ${#new_pd_apikey} -ne $string_lenth ]];then
-                echo "ERROR: The PagerDuty REST API key is not correct, the PagerDuty REST API key should be the 20-character string"  | tee -a "$logpath"
+                echo "ERROR: The PagerDuty REST API key is not correct, the PagerDuty REST API key must be the 20-character string"  | tee -a "$logpath"
                 exit 1
             fi
             ;;
