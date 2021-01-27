@@ -35,7 +35,7 @@ parse_commandline()
             echo "Slack hubot token HUBOT_SLACK_TOKEN:  $new_slack_token"   
             prefix="xoxb"
             if [[ $new_slack_token != $prefix* ]];then
-                echo "ERROR: The Slack Hubot token format is not correct, it should start with xoxb "  | tee -a "$logpath"
+                echo "ERROR: The Slack Hubot token format is not correct, the Slack Hubot token should be the string start with xoxb "  | tee -a "$logpath"
                 exit 1
             fi
             ;; 
@@ -44,7 +44,7 @@ parse_commandline()
             echo "PagerDuty REST API key:  $new_pd_apikey"  
             string_lenth=20
             if [[ ${#new_pd_apikey} -ne $string_lenth ]];then
-                echo "ERROR: The PagerDuty REST API key format is not correct, pls double check it"  | tee -a "$logpath"
+                echo "ERROR: The PagerDuty REST API key is not correct, the PagerDuty REST API key should be the 20-character string"  | tee -a "$logpath"
                 exit 1
             fi
             ;;
@@ -57,7 +57,7 @@ parse_commandline()
             echo "IBM Cloud Pak console URL:  $new_cem_url" 
             prefix="https://"
             if [[ $new_cem_url != $prefix* ]];then
-                echo "ERROR: The Monitoring service URL is not correct, it should start with https"  | tee -a "$logpath"
+                echo "ERROR: The Monitoring service URL is not correct, it must start with https"  | tee -a "$logpath"
                 exit 1
             fi
             ;;
@@ -82,7 +82,7 @@ parse_commandline()
 
     if [ -n "$new_cem_url" ]||[ -n "$new_cem_apikey" ]||[ -n "$new_cem_apipass" ]||[ -n "$new_pd_apikey" ]||[ -n "$new_pd_servicekey" ]||[ -n "$new_slack_token" ]; then
         echo ""
-        echo "Do you want to continue with above inputs [ y or n; \"n\" is default ]?"
+        echo "Do you want to continue with these inputs [ y or n; \"n\" is default ]?"
         read REPLY
         case $REPLY in
             y*|Y*) ;;
