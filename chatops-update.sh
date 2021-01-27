@@ -170,7 +170,7 @@ update_configmap()
             if [ $result -ne 0 ]; then
                 echo "ERROR: Failed to reload new integration settings" | tee -a "$logpath" 
             else
-                echo "ERROR: Reloaded new integration settings sucessfully" | tee -a "$logpath"  
+                echo "Reloaded new integration settings sucessfully" | tee -a "$logpath"  
             fi
         else
             echo "ERROR: Failed to restart st2client pod" | tee -a "$logpath"
