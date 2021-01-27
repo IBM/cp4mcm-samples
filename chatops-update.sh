@@ -21,7 +21,7 @@ print_help()
     printf '%s\n' "    ./chatops_update.sh -t <HUBOT_SLACK_TOKEN> -a <PagerDuty API key> -s <PagerDuty service key>"    
     printf '%s\n' "Update Slack Hubot token to connect with Slack, and update integration settings for Monitoring service to integrate with Monitoring service"    
     printf '%s\n' "   ./chatops_update.sh -t <HUBOT_SLACK_TOKEN> -u <Monitoring URL> -n <Monitoring API key name> -p <Monitoring API key password>"    
-    
+
 }
 
 parse_commandline()
@@ -162,15 +162,18 @@ update_configmap()
         done
 
         if [ $flag -eq 0 ]; then 
+            echo "st2client pod restarted successfully" | tee -a "$logpath"
             echo "Reloading Chatops with new settings..."  | tee -a "$logpath"
             client_pods=$(kubectl get po -n $namespace | grep st2client | awk '{ print $1}')
             result=$(kubectl -n $namespace exec -it $client_pods -- st2ctl reload 2>/dev/null | grep -c terminated)
 
             if [ $result -ne 0 ]; then
-                echo 'ERROR: Failed to reload new integration settings' | tee -a "$logpath" 
-            fi 
+                echo "ERROR: Failed to reload new integration settings" | tee -a "$logpath" 
+            else
+                echo "ERROR: Reloaded new integration settings sucessfully" | tee -a "$logpath"  
+            fi
         else
-            echo 'ERROR: Failed to restart st2client pod' | tee -a "$logpath"
+            echo "ERROR: Failed to restart st2client pod" | tee -a "$logpath"
         fi 
 
         if [ -f "/tmp/configmap.yaml" ];then
@@ -204,7 +207,7 @@ update_secret()
 
         old_slack_token=$(oc get secret $secret -n $namespace -o yaml |awk '/HUBOT_SLACK_TOKEN:/{print $2}'|head -n 1)
         #echo "old slack token is: $old_slack_token" | tee -a "$logpath"
-  
+
         echo "Updating the secret..."  | tee -a "$logpath"      
         sed -i -e "s#HUBOT_SLACK_TOKEN: $old_slack_token#HUBOT_SLACK_TOKEN: $new_token#" /tmp/slack.yaml 
 
@@ -229,11 +232,12 @@ update_secret()
                 sleep 10
             fi
         done
-    
+
         if [ $flag -ne 0 ]; then 
-            echo 'ERROR: Failed to restart st2chatops pod' | tee -a "$logpath"
-        fi  
-        
+            echo "ERROR: Failed to restart st2chatops pod" | tee -a "$logpath"
+        else
+            echo "st2chatops pod restarted successfully" | tee -a "$logpath" 
+        fi
         if [ -f "/tmp/slack.yaml" ];then
 	        rm -f /tmp/slack.yaml 2>/dev/null
         fi
@@ -261,7 +265,4 @@ update_secret
 update_configmap
 
 exit 0
-
-
-
 
