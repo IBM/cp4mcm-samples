@@ -63,3 +63,8 @@ All notable changes to this project will be documented in this file.
 ## [0.10.0] - 2021-01-29
 - Added chatops-update.sh script to update Chatops integration settings
   - `scripts/chatops-update.sh`
+
+## [0.11.0] - 2021-02-11
+- Added CouchDB backup/restore scripts
+  - `scripts/backupcouch.sh`
+  - `scripts/restorecouch.sh`
