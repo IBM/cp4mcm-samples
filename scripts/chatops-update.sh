@@ -271,6 +271,20 @@ update_slack_connection()
 }
 
 ###
+# Check if oc login 
+###
+oclogin_verify() 
+{
+    oc status > /dev/null 2>&1	
+    result=$?
+    if [[ ${result} -ne 0 ]]; then
+        echo "ERROR: Ensure that you are logged in to your cluster with oc login command." | tee -a "$logpath"
+        exit 1
+    fi
+}
+
+
+###
 # Clean up the temp files
 ###
 clean_up() 
@@ -297,6 +311,7 @@ slack=$release-st2chatops
 [[ $# -eq 0 ]] && print_help
 
 parse_commandline "$@"
+oclogin_verify
 update_slack_connection
 update_integrate_settings
 clean_up
