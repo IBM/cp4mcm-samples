@@ -278,7 +278,7 @@ oclogin_verify()
     oc status > /dev/null 2>&1	
     result=$?
     if [[ ${result} -ne 0 ]]; then
-        echo "ERROR: Pls ensure that you are logged in to your cluster with oc login command." | tee -a "$logpath"
+        echo "ERROR: Ensure that you are logged in to your cluster with oc login command." | tee -a "$logpath"
         exit 1
     fi
 }
