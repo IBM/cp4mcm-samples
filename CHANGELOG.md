@@ -70,6 +70,6 @@ All notable changes to this project will be documented in this file.
   - `scripts/restorecouch.sh`
 
 ## [0.12.0] - 2021-04-13
-- Updated uninstall/cleanup scripts for Chatops removal
+- Updated the uninstall and cleanup scripts for ChatOps removal
   - `scripts/cp4mcm-cleanup-utility.sh`
   - `scripts/uninstall.sh`
