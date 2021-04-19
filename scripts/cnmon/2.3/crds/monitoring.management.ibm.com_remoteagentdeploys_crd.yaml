@@ -19,10 +19,10 @@ spec:
   validation:
     openAPIV3Schema:
       type: object
-      description: "RemoteAgentDeploy is the Schema for the RemoteAgentDeploy.monitoring.management.ibm.com
-        API \n Documentation \n For additional details regarding install parameters
-        check: http://ibm.biz/cp_kcwelcomefam. \n License \n By installing this product
-        you accept the license terms http://ibm.biz/cp4mcm-22-license."
+      description: "Deploy Kubernetes monitoring and Unified Agent through Red Hat Advanced
+        Cluster Management application model. For additional details regarding installation
+        parameters, see [IBM Monitoring DataProvider Management documentation](https://ibm.biz/monitoring_dataprovider).
+        By installing this product, accept the license terms at http://ibm.biz/cp4mcm-23-license."
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
