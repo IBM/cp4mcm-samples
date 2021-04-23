@@ -32,5 +32,4 @@ kubectl create -f monitoring.management.ibm.com_remoteagentdeploys_crd.yaml
 kubectl create -f monitoring.management.ibm.com_uapluginrepo_crd.yaml
 cp operator.yaml operator_cnmon.yaml
 sed -i 's/cp.icr.io/'"$LOCAL_DOCKER_REGISTRY"'/g' operator_cnmon.yaml
-sed -i 's/2.3.0/2.3.0-ibm-monitoring-dataprovider-mgmt/g' operator_cnmon.yaml
 kubectl create -f operator_cnmon.yaml -n $namespace
