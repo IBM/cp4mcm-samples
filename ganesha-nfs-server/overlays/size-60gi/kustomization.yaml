@@ -1,0 +1,4 @@
+bases:
+- ../../base
+patches:
+- pvc-60.yaml
