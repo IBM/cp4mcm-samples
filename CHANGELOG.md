@@ -68,3 +68,7 @@ All notable changes to this project will be documented in this file.
 - Added CouchDB backup/restore scripts
   - `scripts/backupcouch.sh`
   - `scripts/restorecouch.sh`
+
+## [0.11.1] - 2021-04-30
+- Updated grc-policy-updates.sh script to be consistent with RHACM policy changes.
+  - `scripts/grc-policy-updates.sh`
