@@ -72,3 +72,7 @@ All notable changes to this project will be documented in this file.
 ## [0.11.1] - 2021-04-30
 - Updated grc-policy-updates.sh script to be consistent with RHACM policy changes.
   - `scripts/grc-policy-updates.sh`
+
+## [0.11.2] - 2021-05-03
+- Added vaultfeeder tool to configure HashiCorp Vault and push target VM credentials in it for IBM CloudPak for Multicloud Management VM policy controller 2.0 onwards.
+  - `vaultfeeder`
