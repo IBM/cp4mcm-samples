@@ -1,0 +1,40 @@
+{
+    "bucketInfo":{
+        "accessKeyId":"",
+        "secretAccessKey":"",
+        "bucketName":"",
+        "bucketUrl":"",
+        "bucketRegion":""
+    },
+
+    "backupName":"aws-master-backup-v3-without-pv-label",
+
+    "veleroHelmchart":"https://vmware-tanzu.github.io/helm-charts",
+    "veleroHelmchartVersion":"2.14.7",
+
+    "ingressSubdomain":"",
+
+    "csRestoreNamePrefix":"cs-restore",
+
+    "vaMaRestoreNamePrefix":"vama-restore",
+
+    "grcRestoreNamePrefix":"grc-restore",
+    "grcCrRestoreNamePrefix":"grc-cr-restore",
+    "grcCrNamespace":"default",
+
+    "openldapRestoreNamePrefix":"openldap-restore",
+    "openldapInstalledNamespace":"openldap",
+
+    "imRestoreNamePrefix":"im-restore",
+    "imRestoreLabelKey":"imbackup",
+    "imRestoreLabelValue":"t",
+
+    "camRestoreNamePrefix":"cam-restore",
+
+    "sloAndSythenticCrdRestoreNamePrefix":"slo-synthetic-crd-restore",
+    "monitoringSecretRestoreNamePrefix":"monitoring-secret-restore",
+    "monitoringRestoreNamePrefix":"monitoring-restore",
+    "monitoringRestoreLabelKey":"appbackup",
+    "monitoringRestoreLabelValue":"monitoring"
+
+}

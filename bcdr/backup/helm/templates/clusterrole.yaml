@@ -1,0 +1,112 @@
+#--------------------------------------------------------------------------
+# Licensed Materials - Property of IBM
+#
+# (C) Copyright IBM Corporation 2019.
+#
+# US Government Users Restricted Rights - Use, duplication or disclosure
+# restricted by GSA ADP Schedule Contract with IBM Corporation.
+#--------------------------------------------------------------------------
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: backup-role
+  namespace: velero
+rules:
+- apiGroups:
+  - velero.io
+  resources:
+  - backups
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - list
+  - get
+  - patch
+  - delete
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  verbs:
+  - get
+  - patch
+  - delete
+  - create  
+- apiGroups:
+  - "apiextensions.k8s.io"
+  resources:
+  - customresourcedefinitions
+  verbs:
+  - get
+  - patch  
+- apiGroups:
+  - "apps"
+  resources:
+  - statefulsets
+  - deployments
+  - deployments/scale
+  - statefulsets/scale
+  verbs:
+  - get
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - secrets
+  - services
+  verbs:
+  - get
+  - patch 
+- apiGroups:
+  - "declarativemonitoring.management.ibm.com"
+  resources:
+  - slobundles
+  - syntheticbundles
+  verbs:
+  - get
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - jobs
+  verbs:
+  - delete
+- apiGroups:
+  - "batch"
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - delete
+  - create
+- apiGroups:
+  - "securityenforcement.admission.cloud.ibm.com"
+  resources:
+  - clusterimagepolicies
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - "infra.management.ibm.com"
+  resources:
+  - iminstalls
+  verbs:
+  - get
+  - patch
+- apiGroups:
+  - velero.io
+  resources:
+  - deletebackuprequests
+  - podvolumebackups
+  verbs:
+  - list

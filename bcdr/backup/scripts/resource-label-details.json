@@ -1,0 +1,212 @@
+ [
+      {
+        "resourceType": "CustomResourceDefinition",
+        "resourceName": "slobundles.declarativemonitoring.management.ibm.com",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": ""
+      },
+      {
+        "resourceType": "CustomResourceDefinition",
+        "resourceName": "syntheticbundles.declarativemonitoring.management.ibm.com",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": ""
+      },
+      {
+        "resourceType": "sts",
+        "resourceName": "monitoring-cassandra",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "sts",
+        "resourceName": "monitoring-couchdb",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "SloBundle",
+        "resourceName": "bookinfo-slos",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "bookinfo-project-think"
+      },
+      {
+        "resourceType": "SyntheticBundle",
+        "resourceName": "bookinfo-synthetic",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "bookinfo-project-think"
+      },
+      {
+        "resourceType": "pvc",
+        "resourceName": "data-monitoring-cassandra-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pvc",
+        "resourceName": "data-monitoring-couchdb-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pvc",
+        "resourceName": "jobs-monitoring-ibm-cem-datalayer-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pod",
+        "resourceName": "monitoring-cassandra-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pod",
+        "resourceName": "monitoring-couchdb-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pod",
+        "resourceName": "monitoring-ibm-cem-datalayer-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "cm",
+        "resourceName": "monitoring-couchdb-configmap",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pvc",
+        "resourceName": "postgresql",
+        "labels": [
+            "imbackup=t"
+        ],
+        "namespace": "management-infrastructure-management"
+      },
+      {
+        "resourceType": "secret",
+        "resourceName": "imconnectionsecret",
+        "labels": [
+            "imbackup=t"
+        ],
+        "namespace": "management-infrastructure-management"
+      },
+      {
+        "resourceType": "IMInstall",
+        "resourceName": "im-iminstall",
+        "labels": [
+            "imbackup=t"
+        ],
+        "namespace": "management-infrastructure-management"
+      },
+      {
+        "resourceType": "pvc",
+        "resourceName": "data-monitoring-kafka-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "secret",
+        "resourceName": "kafka-client-secret",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "service",
+        "resourceName": "monitoring-kafka",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "sts",
+        "resourceName": "monitoring-kafka",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pod",
+        "resourceName": "monitoring-kafka-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pod",
+        "resourceName": "monitoring-zookeeper-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "sts",
+        "resourceName": "monitoring-zookeeper",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "pvc",
+        "resourceName": "data-monitoring-zookeeper-0",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "cm",
+        "resourceName": "monitoring-zookeeper",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      },
+      {
+        "resourceType": "cm",
+        "resourceName": "monitoring-kafka",
+        "labels": [
+            "appbackup=monitoring"
+        ],
+        "namespace": "management-monitoring"
+      }
+]
+
+  

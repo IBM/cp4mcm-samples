@@ -1,0 +1,68 @@
+#--------------------------------------------------------------------------
+# Licensed Materials - Property of IBM
+#
+# (C) Copyright IBM Corporation 2019.
+#
+# US Government Users Restricted Rights - Use, duplication or disclosure
+# restricted by GSA ADP Schedule Contract with IBM Corporation.
+#--------------------------------------------------------------------------
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: backup-job
+  namespace: velero
+spec:
+  jobTemplate:
+    metadata:
+      name: backup-job
+    spec:
+      template:
+        metadata:
+        spec:
+          imagePullSecrets:
+            - name: {{ .Values.image.pullSecret }}
+          serviceAccountName: backup-sa
+          volumes:
+            - name: backup-config
+              configMap:
+                name: backup-config
+            - name: pod-annotation-config
+              configMap:
+                name: backup-config 
+            - name: pvc-annotation-config
+              configMap:
+                name: backup-config
+            - name: resource-label-config
+              configMap:
+                name: backup-config
+            - name: mongodb-dump-config
+              configMap:
+                name: backup-config    
+            - name: workdir
+              emptyDir: {}                 
+          containers:
+          - image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+            imagePullPolicy: {{ .Values.image.pullPolicy }}
+            name: backup-job
+            resources: {}
+            volumeMounts:
+              - name: backup-config
+                mountPath: /scripts/backup_original.yaml
+                subPath: backup_original.yaml 
+              - name: pod-annotation-config
+                mountPath: /scripts/pod-annotation-details.json
+                subPath: pod-annotation-details.json
+              - name: pvc-annotation-config
+                mountPath: /scripts/config.json
+                subPath: config.json
+              - name: resource-label-config
+                mountPath: /scripts/resource-label-details.json
+                subPath: resource-label-details.json
+              - name: mongodb-dump-config
+                mountPath: /scripts/cs/mongodb-dump.yaml
+                subPath: mongodb-dump.yaml  
+              - mountPath: /workdir
+                name: workdir       
+          restartPolicy: OnFailure
+  schedule: {{ .Values.schedule | quote }}
