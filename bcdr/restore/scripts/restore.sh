@@ -203,6 +203,9 @@ csRestore() {
    # Delete all serviceaccounts
    oc delete sa --all -n ibm-common-services
 
+   # Delete mongo pvc's
+   oc delete pvc mongodbdir-icp-mongodb-0 mongodbdir-icp-mongodb-1 mongodbdir-icp-mongodb-2 -n ibm-common-services
+
    # Creating dummy mongo db pod to delete .velero folder from dump
    oc apply -f cs/dummy-db.yaml
    checkPodReadyness "ibm-common-services" "app=dummy-db" "5"
