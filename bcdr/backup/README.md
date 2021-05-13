@@ -8,7 +8,7 @@ git clone https://github.com/IBM/cp4mcm-samples.git
 
 ## Build Docker Image
 
-Go to `<Path of cp4mcm-samples>/backup`.
+Go to `<Path of cp4mcm-samples>/bcdr/backup`.
 
 ```
 docker build -t cp4mcm-bcdr:latest .
@@ -31,7 +31,7 @@ docker push <Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest
 ## Package Helm Chart
 
 
-1. Go to `<Path of cp4mcm-samples>/backup`.
+1. Go to `<Path of cp4mcm-samples>/bcdr/backup`.
 
 2. Update `values.yaml` located `./helm` with all the required information.
 
