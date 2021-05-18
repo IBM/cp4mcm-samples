@@ -1,0 +1,169 @@
+{
+  "details": [
+    {
+      "namespace": "ibm-common-services",
+      "pod": "alertmanager-ibm-monitoring-alertmanager-0",
+      "volume": "alertmanager-ibm-monitoring-alertmanager-db"
+    },
+    {
+      "namespace": "ibm-common-services",
+      "pod": "logging-elk-data-0",
+      "volume": "data"
+    },
+    {
+      "namespace": "ibm-common-services",
+      "pod": "prometheus-ibm-monitoring-prometheus-0",
+      "volume": "prometheus-ibm-monitoring-prometheus-db"
+    },
+    {
+      "namespace": "ibm-common-services",
+      "pod": "dummy-db",
+      "volume": "mongodump"
+    },
+    {
+      "namespace": "management-monitoring",
+      "pod": "monitoring-couchdb-0",
+      "volume": "data"
+    },
+    {
+      "namespace": "management-monitoring",
+      "pod": "monitoring-cassandra-0",
+      "volume": "data"
+    },
+    {
+      "namespace": "management-monitoring",
+      "pod": "monitoring-ibm-cem-datalayer-0",
+      "volume": "jobs"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-bpd-cds",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-controller-manager-0",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-iaas",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-mongo",
+      "volume": "cam-mongo-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-orchestration",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-portal-ui",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-provider-helm",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-provider-terraform-api",
+      "volume": "cam-terraform-pv,cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-proxy",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-service-composer-api",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-service-composer-ui",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-tenant-api",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "cam-ui-basic",
+      "volume": "cam-logs-pv"
+    },
+    {
+      "namespace": "management-infrastructure-management",
+      "pod": "postgresql",
+      "volume": "miq-pgdb-volume"
+    },
+    {
+      "namespace": "kube-system",
+      "pod": "hybridgrc-postgresql-0",
+      "volume": "hybridgrc-db-pvc"
+    },
+    {
+      "namespace": "kube-system",
+      "pod": "ibm-license-advisor-instance",
+      "volume": "db-persistence"
+    },
+    {
+      "namespace": "kube-system",
+      "pod": "multicluster-hub-etcd-0",
+      "volume": "etcd-data"
+    },
+    {
+      "namespace": "kube-system",
+      "pod": "sre-bastion-postgresql-0",
+      "volume": "data"
+    },
+    {
+      "namespace": "kube-system",
+      "pod": "sre-bastion-teleport-auth",
+      "volume": "sre-bastion-teleport-auth-storage"
+    },
+    {
+      "namespace": "kube-system",
+      "pod": "sre-inventory-inventory-redisgraph-0",
+      "volume": "data"
+    },
+    {
+      "namespace": "management-security-services",
+      "pod": "mutation-advisor-minio-0",
+      "volume": "datadir"
+    },
+    {
+      "namespace": "management-security-services",
+      "pod": "vulnerability-advisor-kafka-0",
+      "volume": "datadir"
+    },
+    {
+      "namespace": "management-security-services",
+      "pod": "vulnerability-advisor-zookeeper-0",
+      "volume": "datadir"
+    },
+    {
+      "namespace": "openldap",
+      "pod": "openldap-server",
+      "volume": "ldap-storage,sldap-storage"
+    },
+    {
+      "namespace": "management-monitoring",
+      "pod": "monitoring-kafka-0",
+      "volume": "data"
+    },
+    {
+      "namespace": "management-monitoring",
+      "pod": "monitoring-zookeeper-0",
+      "volume": "data"
+    }
+  ]
+}

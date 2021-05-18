@@ -1,0 +1,23 @@
+[
+  {
+    "namespace": "management-infrastructure-management",
+    "persistantVolumeClaims": [
+      "cam-logs-pv",
+      "cam-terraform-pv",
+      "cam-mongo-pv"
+    ]
+  },
+  {
+    "namespace": "kube-system",
+    "persistantVolumeClaims": [
+      "etcd-data-multicluster-hub-etcd-0"
+    ]
+  },
+  {
+    "namespace": "openldap",
+    "persistantVolumeClaims": [
+      "openldap",
+      "openldap-config"
+    ]
+  }
+]
