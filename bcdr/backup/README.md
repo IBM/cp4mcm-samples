@@ -21,14 +21,14 @@ oc login --token=<TOKEN> --server=<URL>
 
 Where:
 
-- <TOKEN> is the token that you use to log in to the OpenShift cluster.
-- <URL> is the OpenShift server URL.
+- `<TOKEN>` is the token that you use to log in to the OpenShift cluster.
+- `<URL>` is the OpenShift server URL.
 
 3. Install Velero
 
 a. Deploy S3 bucket in the cloud where IBM Cloud Pak® for Multicloud Management is running. It should be S3 compliant object store such as (AWS S3 bucket, IBM Cloud Object Store, minio)
 
-b. Go to the directory <Path of cp4mcm-samples>/bcdr/backup/scripts by running the following command:
+b. Go to the directory `<Path of cp4mcm-samples>/bcdr/backup/scripts` by running the following command:
 
 ```
 cd <Path of cp4mcm-samples>/bcdr/backup/scripts
@@ -68,7 +68,7 @@ oc get backupStorageLocation -n velero
 
 4. Build the Docker image
 
-a. Go to the directory <Path of cp4mcm-samples>/bcdr/backup by running the following command:
+a. Go to the directory `<Path of cp4mcm-samples>/bcdr/backup` by running the following command:
 
 ```
 cd <Path of cp4mcm-samples>/bcdr/backup
@@ -80,7 +80,7 @@ b. Build the `cp4mcm-bcdr` docker image by running following command:
 docker build -t cp4mcm-bcdr:latest .
 ```
 
-5. Push the Docker image to the image registry by running the following commands:
+5. Tag and Push the Docker image to the image registry by running the following commands:
 
 ```
 docker tag cp4mcm-bcdr:latest <Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest
@@ -96,9 +96,9 @@ docker push <Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest
 
 Where:
 
-- <Image Registry Server URL> is the image registry server URL.
-- <Repository> is the repository where you put the image.
-- <USERNAME> is the username to log in to the image registry server.
+- `<Image Registry Server URL>` is the image registry server URL.
+- `<Repository>` is the repository where you put the image.
+- `<USERNAME>` is the username to log in to the image registry server.
 
 6. Create an image pull secret by running the following command:
 
@@ -108,19 +108,20 @@ oc create secret docker-registry backup-secret -n velero --docker-server=<Image 
 
 Where:
 
-- <Image Registry Server URL> is the image registry server URL.
-- <USERNAME> is the username to log in to the image registry server.
-- <PASSWORD> is the password to log in to the image registry server.
+- `<Image Registry Server URL>` is the image registry server URL.
+- `<USERNAME>` is the username to log in to the image registry server.
+- `<PASSWORD>` is the password to log in to the image registry server.
+- `<EMAIL>` is the email for image registry server. 
 
 7. Package the Helm Chart
 
-a. Go to the directory <Path of cp4mcm-samples>/bcdr/backup by running the following command:
+a. Go to the directory `<Path of cp4mcm-samples>/bcdr/backup` by running the following command:
 
 ```
 cd <Path of cp4mcm-samples>/bcdr/backup
 ```
 
-b. Update the following parameters in values.yaml:
+b. Update the following parameters in values.yaml, values.yaml is located in ./helm:
 
 - repository: Name of the image for e.g. `xy.abc.io/cp4mcm/cp4mcm-bcdr`. Here `xy.abc.io` is the image registry server URL, `cp4mcm` is the name of the repository and `cp4mcm-bcdr` is the name of the Docker image.
 - pullPolicy: Policy to determine when to pull the image from the image registry server. For e.g., To force pull the image use the `Always` policy. 
@@ -128,8 +129,6 @@ b. Update the following parameters in values.yaml:
 - pullSecret: Name of the image pull secret. Refer to the value from step 5.
 - schedule: Cron expression for automated backup. For e.g. To take backup once a day use the `0 0 * * *` Cron expression.
 - storageClassName: Default storage class on the OpenShift cluster. For e.g. `gp2`.  Use the `oc get sc` command to get the list of available Storage Classes on the OpenShift cluster.
-
-values.yaml is located in ./helm
 
 c. Update the backup-config.yaml, which is located in `./helm/templates` If you want to take the backup of additional PVs. For e.g. To take backup of MySQL add a new JSON entry in the `details` array of element `pod-annotation-details.json` as follows: 
 
@@ -151,7 +150,7 @@ helm package ./helm
 
 8. Trigger automated backup
 
-a. Go to the directory <Path of cp4mcm-samples>/bcdr/backup by running the following command:
+a. Go to the directory `<Path of cp4mcm-samples>/bcdr/backup` by running the following command:
 
 ```
 cd <Path of cp4mcm-samples>/bcdr/backup
@@ -180,8 +179,12 @@ oc logs -f <backup-job-***>
 c. Then, check the backup status by running the following command:
 
 ```
-velero get backup
+velero get backup <BACKUP_NAME>
 ```
+
+Where:
+
+- `<BACKUP_NAME>` is the name of the Backup.
 
 10. Trigger on-demand backup
 
@@ -207,8 +210,12 @@ oc logs -f <on-demand-backup-job-***>
 d. Then, check the backup status by running the following command:
 
 ```
-velero get backup
+velero get backup <BACKUP_NAME>
 ```
+
+Where:
+
+- `<BACKUP_NAME>` is the name of the Backup.
 
 ## Notes:
 
