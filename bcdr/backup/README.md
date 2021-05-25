@@ -1,20 +1,86 @@
-# IBM Cloud Pak for Multicloud Management Backup
+# Backing up IBM Cloud Pak® for Multicloud Management
 
-## Clone GitHub Repository
+Follow the steps to back up IBM Cloud Pak® for Multicloud Management.
+
+## Before you begin
+You need to install the kubectl, oc, velero, and Helm CLI on the workstation machine. From the workstation machine, you have to initialize and monitor the backup of IBM Cloud Pak® for Multicloud Management.
+
+## Procedure
+
+1. Clone the GitHub repository by running the following command:
 
 ```
 git clone https://github.com/IBM/cp4mcm-samples.git
 ```
 
-## Build Docker Image
+2. Log in to the OpenShift cluster by running the following command:
 
-Go to `<Path of cp4mcm-samples>/bcdr/backup`.
+```
+oc login --token=<TOKEN> --server=<URL>
+```
+
+Where:
+
+- <TOKEN> is the token that you use to log in to the OpenShift cluster.
+- <URL> is the OpenShift server URL.
+
+3. Install Velero
+
+a. Deploy S3 bucket in the cloud where IBM Cloud Pak® for Multicloud Management is running. It should be S3 compliant object store such as (AWS S3 bucket, IBM Cloud Object Store, minio)
+
+b. Go to the directory <Path of cp4mcm-samples>/bcdr/backup/scripts by running the following command:
+
+```
+cd <Path of cp4mcm-samples>/bcdr/backup/scripts
+```
+
+You need to designate <Path of cp4mcm-samples> with the real path where you put the cp4mcm-samples GitHub repository.
+
+c. Update the following parameters in install-velero-config.json:
+
+- access_key_id: Access key id to connect to S3 bucket.
+- secret_access_key: Secret access key to connect to S3 bucket.
+- bucket_name: Name of the S3 bucket where backup data will be stored.
+- bucket_url: URL to connect to S3 bucket.
+- bucket_region: Region where S3 bucket is deployed.
+
+d. Install Velero using the following command:
+
+```
+sh install-velero.sh
+```
+
+e. Check the velero pods status by running the following command:
+
+```
+oc get pods -n velero
+```
+
+`velero` & `restic` pods should be in a running state.
+
+f. Check the status of backupStorageLocation by running the following command:
+
+```
+oc get backupStorageLocation -n velero
+```
+
+`backupStorageLocation` should be in available phase.
+
+4. Build the Docker image
+
+a. Go to the directory <Path of cp4mcm-samples>/bcdr/backup by running the following command:
+
+```
+cd <Path of cp4mcm-samples>/bcdr/backup
+```
+
+b. Build the `cp4mcm-bcdr` docker image by running following command:
 
 ```
 docker build -t cp4mcm-bcdr:latest .
 ```
 
-## Push Docker Image to Image Registry
+5. Push the Docker image to the image registry by running the following commands:
 
 ```
 docker tag cp4mcm-bcdr:latest <Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest
@@ -28,50 +94,200 @@ docker login <Image Registry Server URL> -u <USERNAME>
 docker push <Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest
 ```
 
-## Package Helm Chart
+Where:
 
+- <Image Registry Server URL> is the image registry server URL.
+- <Repository> is the repository where you put the image.
+- <USERNAME> is the username to log in to the image registry server.
 
-1. Go to `<Path of cp4mcm-samples>/bcdr/backup`.
-
-2. Update `values.yaml` located `./helm` with all the required information.
-
-```
-helm package ./helm
-```
-
-## Login to OpenShift Cluster
-
-```
-oc login --token=<TOKEN> --server=<URL>
-```
-
-## Create Image Pull Secret
+6. Create an image pull secret by running the following command:
 
 ```
 oc create secret docker-registry backup-secret -n velero --docker-server=<Image Registry Server URL> --docker-username=<USERNAME> --docker-password=<PASSWORD> --docker-email=<EMAIL>
 ```
 
-## Deploy Backup Job
+Where:
 
+- <Image Registry Server URL> is the image registry server URL.
+- <USERNAME> is the username to log in to the image registry server.
+- <PASSWORD> is the password to log in to the image registry server.
 
-Go to `<Path to cp4mcm-samples>/backup`.
+7. Package the Helm Chart
+
+a. Go to the directory <Path of cp4mcm-samples>/bcdr/backup by running the following command:
+
+```
+cd <Path of cp4mcm-samples>/bcdr/backup
+```
+
+b. Update the following parameters in values.yaml:
+
+- repository: Name of the image for e.g. `xy.abc.io/cp4mcm/cp4mcm-bcdr`. Here `xy.abc.io` is the image registry server URL, `cp4mcm` is the name of the repository and `cp4mcm-bcdr` is the name of the Docker image.
+- pullPolicy: Policy to determine when to pull the image from the image registry server. For e.g., To force pull the image use the `Always` policy. 
+- tag: Tag of the Docker image for e.g. `latest`.
+- pullSecret: Name of the image pull secret. Refer to the value from step 5.
+- schedule: Cron expression for automated backup. For e.g. To take backup once a day use the `0 0 * * *` Cron expression.
+- storageClassName: Default storage class on the OpenShift cluster. For e.g. `gp2`.  Use the `oc get sc` command to get the list of available Storage Classes on the OpenShift cluster.
+
+values.yaml is located in ./helm
+
+c. Update the backup-config.yaml, which is located in `./helm/templates` If you want to take the backup of additional PVs. For e.g. To take backup of MySQL add a new JSON entry in the `details` array of element `pod-annotation-details.json` as follows: 
+
+```
+{
+    "namespace": "demo",
+    "pod": "mysql-0",
+    "volume": "mysql-volume"
+}
+```
+
+Here `mysql-0` pod is running in the `demo` namespace and referring PVC through volume `mysql-volume`.
+
+d. Package the Helm Chart.
+
+```
+helm package ./helm
+```
+
+8. Trigger automated backup
+
+a. Go to the directory <Path of cp4mcm-samples>/bcdr/backup by running the following command:
+
+```
+cd <Path of cp4mcm-samples>/bcdr/backup
+```
+
+b. Deploy the backup job by running the following command:
 
 ```
 helm install backup-job clusterbackup-0.1.0.tgz
 ```
 
-## Monitor Backup Job
+9. Monitor the backup Job
+
+a. Check the backup pods status by running the following command:
 
 ```
 oc get pods -n velero
 ```
 
+b. Check the backup job logs by running the following command:
+
 ```
 oc logs -f <backup-job-***>
 ```
 
-Wait until the execution is complete. After completion, check the status of backup by using the following command:
+c. Then, check the backup status by running the following command:
 
 ```
 velero get backup
 ```
+
+10. Trigger on-demand backup
+
+a. Deploy the on-demand backup job by running the following command: 
+```
+kubectl create job --from=cronjob/backup-job on-demand-backup-job -n velero
+```
+- This step is optional. Use only when you don't want to wait till the execution of the next scheduled backup job.
+- Deployment of an automated backup job is a prerequisite for the on-demand job. 
+
+b. Check the on-demand backup pods status by running the following command:
+
+```
+oc get pods -n velero
+```
+
+c. Check the on-demand backup job logs by running the following command:
+
+```
+oc logs -f <on-demand-backup-job-***>
+```
+
+d. Then, check the backup status by running the following command:
+
+```
+velero get backup
+```
+
+## Notes:
+
+1. All the Kubernetes resources from all the namespaces except the following namespaces will be backed up:
+
+- openshift
+- openshift-apiserver
+- openshift-apiserver-operator
+- openshift-authentication
+- openshift-authentication-operator
+- openshift-cloud-credential-operator
+- openshift-cluster-machine-approver 
+- openshift-cluster-node-tuning-operator
+- openshift-cluster-samples-operator
+- openshift-cluster-storage-operator
+- openshift-cluster-version  
+- openshift-config 
+- openshift-config-managed
+- openshift-console
+- openshift-console-operator
+- openshift-controller-manager 
+- openshift-controller-manager-operator
+- openshift-dns
+- openshift-dns-operator
+- openshift-etcd
+- openshift-image-registry
+- openshift-infra
+- openshift-ingress 
+- openshift-ingress-operator
+- openshift-insights
+- openshift-kni-infra
+- openshift-kube-apiserver
+- openshift-kube-apiserver-operator
+- openshift-kube-controller-manager
+- openshift-kube-controller-manager-operator
+- openshift-kube-proxy
+- openshift-kube-scheduler 
+- openshift-kube-scheduler-operator
+- openshift-machine-api
+- openshift-machine-config-operator
+- openshift-marketplace
+- openshift-monitoring
+- openshift-multus
+- openshift-network-operator
+- openshift-node
+- openshift-openstack-infra
+- openshift-operator-lifecycle-manager
+- openshift-operators
+- openshift-ovirt-infra
+- openshift-service-ca
+- openshift-service-ca-operator
+- openshift-service-catalog-apiserver-operator
+- openshift-service-catalog-controller-manager-operator 
+- openshift-user-workload-monitoring
+- velero
+
+2. Following are the list of databases per different application will be backed up:
+
+a. Vulnerability Advisor
+- Zookeeper
+- Kafka
+- Elasticsearch
+
+b. Monitoring
+- Zookeeper
+- Kafka
+- CouchDB
+- Cassandra
+
+c. Infrastructure Management
+- PostgreSQL
+
+d. Manage Services
+- MongoDB
+
+e. SRE
+- Redis Graph
+- PostgreSQL
+
+f. IBM Common Services
+- MongoDB
+- Prometheus 

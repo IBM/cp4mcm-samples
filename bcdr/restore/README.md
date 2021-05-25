@@ -1,13 +1,16 @@
 # IBM Cloud Pak for Multicloud Management Restore
 
 ## Prerequisites
-- Install `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm` , and `cloudctl` CLI.
+- Install `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm` , and `cloudctl` CLI on the workstation machine. From the workstation machine, you have to initialize and monitor the restore of IBM Cloud Pak® for Multicloud Management.
 
 ## Notes:
-- The restore cluster should be in the same zone as backup cluster.
-- When any velero restore is partially failing with errors then perform the same restore again with the same command.
+- The restore cluster should be in the same region as backup cluster.
 - It is recommended to have the same OpenShift version in both the backed up and restored cluster.
 - If Monitoring needs to be restored, then we need to keep backup and restore cluster domain name same otherwise after restore monitoring agents will not be able to connect to MCM.
+- The steps outlined below are to restore CP4MCM in a new cluster.
+- Current backup also backs up keys & certificates from the previous clusters. This is required to ensure restored data is accessible in the new deployment. This restore flow works in conjunction with backup flow detailed in the backupsection. It can not run independently.
+- Please follow the restore procedure as mentioned below, it is important to have data restored 1st and then deploy cluster else things will not work as expected.
+
 
 ## Disaster recovery steps
 
@@ -61,20 +64,41 @@ Change the following values in `restore-data.json` file based on your values.
 In the restored cluster perform the following command:
 
 ```
-oc login
+oc login --token=<TOKEN> --server=<URL>
 ```
+
+Where:
+
+- `<TOKEN>` is the token that you use to log in to the OpenShift cluster.
+-  `<URL>` is the OpenShift server URL.
 
 #### Step 3
 
-Restore Common Services, Monitoring, GRC, VA\MA, and Managed Services by running the script `restore.sh` using the following command. The script is available in `scripts` folder.
+Restore Common Services, Monitoring, GRC, VA\MA, and Managed Services by running `restore.sh` script. When you will execute this script with below option then it will install velero first in restore cluster and then it will perform all the restores.
+
+- Clone the GitHub repository by running the following command:
 
 ```
-bash restore.sh -a` or `bash restore.sh --all-restore
+git clone https://github.com/IBM/cp4mcm-samples.git
 ```
 
-#### Step 4
+- Go to the directory `<Path of cp4mcm-samples>/bcdr/restore/scripts` by running the following command:
 
-Delete all the installed operators from `management-infrastructure-management` namespace.
+```
+cd <Path of cp4mcm-samples>/bcdr/backup/scripts
+```
+
+You need to designate `<Path of cp4mcm-samples>` with the real path where you put the cp4mcm-samples GitHub repository
+
+- Execute following command to start the restore process
+
+```
+bash restore.sh -a 
+
+or 
+
+bash restore.sh --all-restore
+```
 
 ### Install Common Services and IBM Cloud Pak for Multicloud Management
 
@@ -96,49 +120,50 @@ Delete all the installed operators from `management-infrastructure-management` n
           replicas: 1
   ```
 
-- Install IBM Cloud Pak for Multicloud Management operator and create its CR by enabling different components for example: Infrastructure Management, Managed Services, Service Library, GRC, and VA\MA except Monitoring.
-- Wait until the IBM Cloud Pak for Multicloud Management installation is complete.
-- In case if some pods of `ibm-common-services` namespace are not coming up due to secret not found or ConfigMap not found issue then run the following shell script:
+- Install IBM Cloud Pak for Multicloud Management operator and create its CR by enabling different components for example: Infrastructure Management, Managed Services, Service Library, GRC, and VA\MA except Monitoring. Also for Managed Services specify the existing claim name details as given below.
 
-   ```
-   https://github.com/IBM/cp4mcm-samples/blob/master/scripts/cp4mcm-rhacm21-cp-issuer-secret.sh
-   ```
+```
+        - enabled: true
+          name: ibm-management-cam-install
+          spec:
+            manageservice:
+              camLogsPV:
+               name: cam-logs-pv
+               persistence:
+                 accessMode: ReadWriteMany
+                 enabled: true
+                 existingClaimName: "cam-logs-pv"
+                 existingDynamicVolume: false
+                 size: 10Gi
+                 storageClassName: "<your stotage class name>"
+                 useDynamicProvisioning: true
+              camMongoPV:
+                name: cam-mongo-pv
+                persistence:
+                  accessMode: ReadWriteMany
+                  enabled: true
+                  existingClaimName: "cam-mongo-pv"
+                  existingDynamicVolume: false
+                  size: 15Gi
+                  useDynamicProvisioning: true
+                  storageClassName: "<your stotage class name>"
+              camTerraformPV:
+                name: cam-terraform-pv
+                persistence:
+                  accessMode: ReadWriteMany
+                  enabled: true
+                  existingClaimName: "cam-terraform-pv"
+                  existingDynamicVolume: false
+                  size: 15Gi
+                  storageClassName: "<your stotage class name>"
+                  useDynamicProvisioning: true
+```
 
-- If `auth-idp`, `common-web-ui`, `iam-onboarding`,  , and `security-onboarding` pods are not coming up and `nginx-ingress-controller` pod is crashing again and again claiming `unable update proxy address` then we need to perform the following steps:
-
-   ```
-   oc get NginxIngress  default -o yaml > default-nginx.yaml
-   ```
-
-   ```
-   oc delete NginxIngress default
-   ```
-
-   ```
-   oc get csv | grep nginx
-   ```
-
-   ```
-   oc get csv ibm-ingress-nginx-operator.v1.3.1 -o yaml
-   ```
-
-   Copy JSON data starting from { "apiVersion": "operator.ibm.com/v1alpha1" & save in `data.json` file.
-
-   ```
-   oc apply -f data.json
-   ```
-
-   ```
-   oc delete po ibm-ingress-nginx-operator
-   ```
-
-   Once the operator is UP, check `ibmcloud-cluster-info` configMap, it should have updated proxy-address.
-
-- After performing these steps wait until all pods of `ibm-common-services` namespace come UP.
+- Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace come UP.
 
 ### Restore IBM Common Services DB
 
-- Run `mongo-restore-dbdump` job for common services db restore, job definition file is available in `CP4MCM-BCDR/restore/scripts/cs` folder.
+- Run `mongo-restore-dbdump` job for common services db restore, `mongo-restore-dbdump.yaml` file is available in `<Path of cp4mcm-samples>/bcdr/restore/scripts/cs` folder.
 
   ```
   oc apply -f mongo-restore-dbdump.yaml
@@ -146,40 +171,6 @@ Delete all the installed operators from `management-infrastructure-management` n
 
 - After restoring IBM common services database set the mongo db cluster count to `default` by modifying common services installation yaml.
 - Enable Monitoring by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
-
-### Create Managed Services CR using existing claim name
-
-- Delete the Managed Services CR, which is created through installation and create a new CR using the existing claim name. CR deletion can be done from OpenShift web console or using the following command:
-
-  ```
-  oc delete ManageService cam -n management-infrastructure-management
-  ```
-
-- After installation, if you are not able to access the Managed Services from IBM Cloud Pak for Multicloud Management console and getting error like `Unable to get access token` then we need to do oidc registration by using the following steps.
-
-#### Steps for Managed Services oidc registration
-
-- Delete `cam-oauth-client-secret`.
-
-   ```
-   oc delete secret cam-oauth-client-secret -n management-infrastructure-management
-   ```
-
-- Copy `cam-oidc-client` in a separate yaml, for example: `cam-oidc-client.yaml`.
-
-  ```
-  oc get client cam-oidc-client -n management-infrastructure-management -o yaml > cam-oidc-client.yaml
-  ```
-
-- Delete the `clientId` property from `cam-oidc-client.yaml` file and then apply the changes.
-
-  ```
-  oc apply -f cam-oidc-client.yaml
-  ```
-
-- Delete the `oidcclient-watcher` pod from `ibm-common-services` namespace.
-
-- Delete `cam-ui-basic` and `cam-portal-ui` pods and then CAM should be accessible from IBM Cloud Pak for Multicloud Management console.
 
 ### Restore Infrastructure Management
 
@@ -210,4 +201,6 @@ Delete all the installed operators from `management-infrastructure-management` n
    --include-namespaces open-cluster-management,<MANAGED_CLUSTER_NAMESPACE>,<DEPLOYED_APPLICATION_NAMESPACE>
    ```
 
-   #### Note: This restore should be performed after RHCAM and IBM Cloud Pak for Multicloud Management installation.
+   #### Note: 
+   - This restore should be performed after RHCAM and IBM Cloud Pak for Multicloud Management installation.
+   - When any velero restore is partially failing with errors then perform the same restore again with the same command.
