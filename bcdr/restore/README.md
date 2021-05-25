@@ -7,9 +7,9 @@
 - The restore cluster should be in the same region as backup cluster.
 - It is recommended to have the same OpenShift version in both the backed up and restored cluster.
 - If Monitoring needs to be restored, then we need to keep backup and restore cluster domain name same otherwise after restore monitoring agents will not be able to connect to MCM.
-- The steps outlined below are to restore CP4MCM in a new cluster.
-- Current backup also backs up keys & certificates from the previous clusters. This is required to ensure restored data is accessible in the new deployment. This restore flow works in conjunction with backup flow detailed in the backupsection. It can not run independently.
-- Please follow the restore procedure as mentioned below, it is important to have data restored 1st and then deploy cluster else things will not work as expected.
+- The following outlined steps are to restore IBM Cloud Pak for Multicloud Management in a new cluster.
+- Current backup also backs up keys & certificates from the previous clusters. This is required to ensure restored data is accessible in the new deployment. This restore flow works in conjunction with backup flow detailed in the backup section. It cannot run independently.
+- Do the following restore procedure and it is important to have data restored first and then deploy cluster. Otherwise, things will not work as expected.
 
 
 ## Disaster recovery steps

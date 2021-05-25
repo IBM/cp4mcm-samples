@@ -124,13 +124,13 @@ cd <Path of cp4mcm-samples>/bcdr/backup
 b. Update the following parameters in values.yaml, values.yaml is located in ./helm:
 
 - repository: Name of the image for e.g. `xy.abc.io/cp4mcm/cp4mcm-bcdr`. Here `xy.abc.io` is the image registry server URL, `cp4mcm` is the name of the repository and `cp4mcm-bcdr` is the name of the Docker image.
-- pullPolicy: Policy to determine when to pull the image from the image registry server. For e.g., To force pull the image use the `Always` policy. 
+- pullPolicy: Policy to determine when to pull the image from the image registry server. For example, To force pull the image use the `Always` policy. 
 - tag: Tag of the Docker image for e.g. `latest`.
 - pullSecret: Name of the image pull secret. Refer to the value from step 5.
-- schedule: Cron expression for automated backup. For e.g. To take backup once a day use the `0 0 * * *` Cron expression.
-- storageClassName: Default storage class on the OpenShift cluster. For e.g. `gp2`.  Use the `oc get sc` command to get the list of available Storage Classes on the OpenShift cluster.
+- schedule: Cron expression for automated backup. For example, To take backup once a day use the `0 0 * * *` Cron expression.
+- storageClassName: Default storage class on the OpenShift cluster. For example `gp2`.  Use the `oc get sc` command to get the list of available Storage Classes on the OpenShift cluster.
 
-c. Update the backup-config.yaml, which is located in `./helm/templates` If you want to take the backup of additional PVs. For e.g. To take backup of MySQL add a new JSON entry in the `details` array of element `pod-annotation-details.json` as follows: 
+c. Update the backup-config.yaml, which is located in `./helm/templates` If you want to take the backup of additional PVs. For example, To take backup of MySQL add a new JSON entry in the `details` array of element `pod-annotation-details.json` as follows: 
 
 ```
 {
@@ -272,7 +272,7 @@ Where:
 - openshift-user-workload-monitoring
 - velero
 
-2. Following are the list of databases per different application will be backed up:
+2. The following list of databases for each different application will be backed up:
 
 a. Vulnerability Advisor
 - Zookeeper
