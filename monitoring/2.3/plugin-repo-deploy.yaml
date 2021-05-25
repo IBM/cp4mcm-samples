@@ -1,0 +1,259 @@
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: "plugin-repo"
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: true
+  hostPID: true
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: "plugin-repo"
+rules:
+- apiGroups:
+  - "*"
+  resources:
+  - "*"
+  verbs:
+  - "*"
+- nonResourceURLs:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - extensions
+  resourceNames:
+  - "plugin-repo"
+  resources:
+  - podsecuritypolicies
+  verbs:
+  - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: "plugin-repo"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: "plugin-repo"
+subjects:
+- kind: ServiceAccount
+  name:  plugin-repo
+  namespace: REPLACE_WITH_TARGET_NAMESPACE
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name:  plugin-repo
+imagePullSecrets:
+    - name: pull-secret-ua
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: plugin-repo-https-secret
+  labels: 
+    app: "plugin-repo"
+    heritage: "Tiller"
+    release: "full-scorpion"
+type:  Opaque 
+data:
+  localhost.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNtRENDQVlBQ0NRRHEyMzIxTmNPbStqQU5CZ2txaGtpRzl3MEJBUXNGQURBT01Rd3dDZ1lEVlFRS0RBTkoKUWswd0hoY05NakF3T0RJeU1Ea3dOalUzV2hjTk1qRXdPREl5TURrd05qVTNXakFPTVF3d0NnWURWUVFLREFOSgpRazB3Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLQW9JQkFRQ3gyTXQ2NEZYelNHck5jaTVmCjRNTnRjOXQ2WUpkREVkUWFUOW9QZUY4MGYwY1g3Y0pWMHJldFNneFMvWUh5cHZMS2I3d1Jnek8rRmRvc1l0a0YKenZBcHYzWHZPTjR2TVg2MXkyMzBubFNhZWgxQWpvaXQyZU5HTWhrYlVRU0pBa1NBNkJyc2VjNmtsazNndlJoUgpHM09RN2FPR1N5dHl0TjBsWW54NDR6UGtBWXdHQVNnS0s0VTFrL0tNdkU1VTJyZSthcGFERGNPcFpDaldrb3V6ClVISndwQkFVbXd1bEpvYXI1cytka1doL1ZkSThtc3RTUUdZYjNsMzJxdlpvTDhZaTcvbWszY3pzWlY2Qlo0bWEKNkZJbTBLOWVwSkZ5MGNwZlpna0x3VFppcnM0b21EZUs2U0t1RzJnUncybUZlN3VzV1JGS3VZNnNzdXlSWVVjSApwbXF4QWdNQkFBRXdEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBQVBxdDdFNjFYbU9qZkJwcm1KUS9FUUQ5VEd5CjUrd3BhZUU4dDd4VmQ0OXpscnQrZkdDR0ZCak1vNVB4WG5FbmZwRjErOEluZlFWUVdIT1ZZZDZaMTdjTUNBY0QKSTRQOEJHamlDM3NZaTBEVmVJQU9vWExXKzhKL1IyQUR1emlERWdUdk8vMVNUeFhLSHc1U0MrWjhVZGhSQXhJWApFcmg5U0wrQkUxMDEyVGZha0tQeTd4SXphM3pwM2g4Y3NLakd2YStzY2JjeWRscExjc2dUS3lrRTkvRmpvbnRLCk5mbFhkbVlYb0xiWmN4ZUY0SGQ2L1ZQN2J0b0FSV1FBbDZxSndBbzNRWjY0ZU50VnhoK1k3T0hpSVJJekY1YnUKUXU1dWRDRlFFVG4yWUNHc2cxUDJKNjFlMmEvcnQ1YXlMMVlpNWhXQWRhcXcxZ3hVY254azZWaFBPdFk9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  localhost.csr: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ2JEQ0NBVlFDQVFBd0RqRU1NQW9HQTFVRUNnd0RTVUpOTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQwpBUThBTUlJQkNnS0NBUUVBc2RqTGV1QlY4MGhxelhJdVgrRERiWFBiZW1DWFF4SFVHay9hRDNoZk5IOUhGKzNDClZkSzNyVW9NVXYyQjhxYnl5bSs4RVlNenZoWGFMR0xaQmM3d0tiOTE3emplTHpGK3RjdHQ5SjVVbW5vZFFJNkkKcmRualJqSVpHMUVFaVFKRWdPZ2E3SG5PcEpaTjRMMFlVUnR6a08yamhrc3JjclRkSldKOGVPTXo1QUdNQmdFbwpDaXVGTlpQeWpMeE9WTnEzdm1xV2d3M0RxV1FvMXBLTHMxQnljS1FRRkpzTHBTYUdxK2JQblpGb2YxWFNQSnJMClVrQm1HOTVkOXFyMmFDL0dJdS81cE4zTTdHVmVnV2VKbXVoU0p0Q3ZYcVNSY3RIS1gyWUpDOEUyWXE3T0tKZzMKaXVraXJodG9FY05waFh1N3JGa1JTcm1PckxMc2tXRkhCNlpxc1FJREFRQUJvQmt3RndZSktvWklodmNOQVFrSApNUW9NQ0ZCQWMzTjNNSEprTUEwR0NTcUdTSWIzRFFFQkN3VUFBNElCQVFBTU01UGhpdG54YlBsaUorem9aQ3lJCnovaVFXTEl3dGxMSktmU21xc2twbTNxeXhzcmFRN2RVUGN3YThJVUNDcFhRRjdkVW0ydHVBMFh3MmlSRVQwYXoKb1dEVy9LZHZlSU5oSVVrb091Y1JmTE5kdWlSUko3MUU1K01KOGxRRzF5c1R6eE9kRzZQdk84c294L1Z4TmcwZgpMM0NQUUNGdkQzeEpBOVhvaHVYaFpENGVmTCtoejhXU1BMSWxIam0vd3lnaC9sYUl0MktlYmNrY0pxQTJQdzZ2ClZ4R3B4Sm1MQXBwSVZFRm9lRXhWYmFaOG5jbG1YUmwvZjg2cVpLdVYzZU5sbTFsME1EYWYydEFTWEJ1Y1ZNbGoKZFRGSzJibSsxdE9MUnhlUUE4RkY3VkxQdTFta01pdFIzYmw0NzRRNnduWGN1YlgvSDVEdkNzVktUNEc1cnJDWQotLS0tLUVORCBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0K
+  localhost.key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRQ3gyTXQ2NEZYelNHck4KY2k1ZjRNTnRjOXQ2WUpkREVkUWFUOW9QZUY4MGYwY1g3Y0pWMHJldFNneFMvWUh5cHZMS2I3d1Jnek8rRmRvcwpZdGtGenZBcHYzWHZPTjR2TVg2MXkyMzBubFNhZWgxQWpvaXQyZU5HTWhrYlVRU0pBa1NBNkJyc2VjNmtsazNnCnZSaFJHM09RN2FPR1N5dHl0TjBsWW54NDR6UGtBWXdHQVNnS0s0VTFrL0tNdkU1VTJyZSthcGFERGNPcFpDalcKa291elVISndwQkFVbXd1bEpvYXI1cytka1doL1ZkSThtc3RTUUdZYjNsMzJxdlpvTDhZaTcvbWszY3pzWlY2QgpaNG1hNkZJbTBLOWVwSkZ5MGNwZlpna0x3VFppcnM0b21EZUs2U0t1RzJnUncybUZlN3VzV1JGS3VZNnNzdXlSCllVY0hwbXF4QWdNQkFBRUNnZ0VCQUszS05uMHF2NUx2RHo4WDl1MUdUSEttcHJEZHRyS1p0M1RHMTBZSzBLNFMKT2p6TjMvdlI0Qjk4bnJKeWZBdk16TEM1bzBSUnU3eGl5a0paamMyNVBNTHZENlhuSW1kbnJIU21DQnJrcGJRVwo1SUx6UmVqdFpNUnhyRXNmVHBrOEdBa0h4MWVTYURZNWtueXREQmdtQlRaNG9qVlhPMnZxQmJqRWx2SGl4QkJuCk9XWjFVVlIzcFJLbmFXdnBjbkQvWVZtbWd5QjY1TGY5ZE1vVklKTzVZbkJoVldSZFd4NE1MSWpQVUtDQTQ5TU8KRTZPOTEvS1FhYm5VNHB5WTVuSC9pRlNrRExQRG9waEhWWStrVE8va0UzMXNXMUhhaHE4N3gzeDkwbFpudm5GaAp0Rm5ibjZtYW14QnVTc2VMOXZvZ3NOZUpRL3ZTa1FMaWoycVJtTUZiZW9FQ2dZRUEyNUpiNm1CT3pndkdZRkFnCldyWnppM3NsYkZCMWlIMFZkL2lGdmd0ZHNISEpGR01YTFJGV1Bzb3cxSkVsRUs0OVg5OUpSd0VEOVVuMEpEMFQKTXg0bzhTODVPZ24vUSt1TFNBRlRjOURGVmY4UWYxK2FLZVlQQy9sNm83NnpsYkZsNjA2SXlGc1VaemZQNUJHbApIWVJKVEpraGF3WmNudlJjOGQzeG1jemZTcGtDZ1lFQXoxcE1tcGhyOVpYTFVRQ1V3MUFNRWtCd3lnSkFFNEh3ClFQVnJSRWRmTHBiV0tjclk5YTAzUENJcVNGZXdFTFl2Z0RaUWFDWnlYVGxQQTNtQ1FzTU5KWGwyN2RDOGtHUU4KRkQzc0pCbDA0TEgvSXB5NHhxSGxvVVdyNDl0bVJTZjFUMS9VSDRlN2N6L1VUUStvUEh5S21KMXFET0lqSmFHQgpLbTdlZ3JuR0I5a0NnWUFHNkkzM3k5dnU0N1AwSjlFOHlXek5RS3ltd2NsUTZBNmEzYmpuaDlnRXl5KzJjbit5CkxVOTNYa2szQnZJUm1rbllFR0J2MlhwVVoyVkZGcDdhQnVMbTQ4TjdMZ0ZZRTdzb0l0S0xYRkE1S25OTWJxZWQKRmQzM1ZId2xWc1N6dXdjbjVpcXJreUlMTlZoWEpxNzVSTVpCb0xmS2RFTEp4WXAvR2FxV1dqblVVUUtCZ0VLcwpSVzk4VFZLRlhQL3AwT3ZRaEdFbUNWNWJST0ZBNmREcFdSbDJYWnVzY3FhemkvbkxQYlIvUTl0Skh0cnd5ZXRQCkM2SEJvd3BvMEFoTS9ONmN1MUJ1Y3hoYkF4Ym1wUEg2UzBEOFVvR2htbWsxdlpCWkpHNHI2ZTUxY0xnUjlpWVUKcVMrT1JHNzFlajFoS0haeWtWb3JXNXRTNTN4Rkp6Uk92QXVLMHF0WkFvR0FDb3B1dFJ5dkZSTUlzWnZZYmI4UwpXd1lHNHBhODVrdTRaTzFocDAxTkZpdGRBdTErT0NYWHlWWHArZmdYUXZDQ1BWeUZ4T3JzcU8zRDBlenNTcC8xCmtGbVBubzI0eWNSb1Jva3RybEtQNlZYVzRpTnJGcFV1cUc2dW10WTJlaEJHS3MrN2g4amhOS0ZFa1NxZnBEelcKSlQ1SlQyWlBvZlB6c1hDeWVBTVR4cGM9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plugin-repo
+  labels:
+    app: plugin-repo
+spec:
+  ports:
+  - name: client-connect
+    port: 9443
+    targetPort: 9443
+  selector:
+    app:  plugin-repo
+  type: ClusterIP
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: plugin-repo
+  labels:
+    app: plugin-repo
+spec:
+  port:
+    targetPort: client-connect
+  to:
+    kind: Service
+    name: plugin-repo
+    weight: 100
+  tls:
+    termination: passthrough
+  wildcardPolicy: None
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: ua-plugin-repo-pvc
+  namespace: REPLACE_WITH_TARGET_NAMESPACE
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: plugin-repo
+  labels:
+    app: "plugin-repo"
+    chart: "ibm-ua-operator"
+    heritage: "Tiller"
+    release: "kindred-lightningbug"
+spec:
+  replicas: 1
+  serviceName: "plugin-repo"
+  selector:
+    matchLabels:
+        app: "plugin-repo"
+        chart: "ibm-ua-operator"
+        heritage: "Tiller"
+        release: "kindred-lightningbug"
+        component: "operator"
+  template:
+    metadata:
+      annotations:        
+        productID: "9f22bc0647affc5cad4686c8853ec3a8"
+        productName: "Unified Agent Plug-in Repo"
+        productVersion: "2.3"
+        productMetric: AUTHORIZED_USER
+        cloudpakId: "e46b1bfe85b5ffac1e8eefadf22d988f"
+        cloudpakName: "IBM Cloud Pak for Multicloud Management"
+        cloudpakVersion: "2.3"
+      labels:
+        app: "plugin-repo"
+        chart: "ibm-ua-operator"
+        heritage: "Tiller"
+        release: "kindred-lightningbug"
+        component: "operator"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                  - amd64
+                  - ppc64le
+                  - s390x
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+      serviceAccountName: plugin-repo
+      volumes:
+      - name: pluginrepokey
+        secret:
+          defaultMode: 420
+          secretName: plugin-repo-https-secret 
+      - name: plugins-volume
+        emptyDir: {}
+      - name: plugin-repo
+        persistentVolumeClaim:
+          claimName: ua-plugin-repo-pvc
+      initContainers:
+        - name: pluginsimage
+          image: REPLACE_WITH_YOUR_PLUGINS_IMAGE
+          command: 
+            - "/bin/bash"
+            - "-c"
+            - "cp -r /opt/plugins/*.*  /mnt/plugins"
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 512Mi 
+              cpu: 500m 
+            requests:
+              memory: 200Mi
+              cpu: 100m
+          securityContext:
+            capabilities:
+              drop:
+               - ALL
+            privileged: false
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation : false
+          volumeMounts:
+          - name: plugins-volume
+            mountPath: /mnt/plugins
+      containers:
+        - name: plugin-repo
+          image: REPLACE_WITH_YOUR_REPO_IMAGE
+          imagePullPolicy: Always
+          resources:
+            limits:
+              memory: 512Mi 
+              cpu: 500m 
+            requests:
+              memory: 200Mi
+              cpu: 100m
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1001
+            capabilities:
+              drop:
+               - ALL
+            privileged: true
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation : true
+          volumeMounts:
+          - name: pluginrepokey  
+            mountPath: /opt/ibm/keyfiles
+          - name: plugins-volume
+            mountPath: /opt/plugins
+          - name: plugin-repo
+            mountPath: /tmp/repo
+          livenessProbe:
+            exec:
+              command:
+                - cat
+                - /opt/repo/seelog-repo.xml
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            exec:
+              command:
+                - cat
+                - /opt/repo/run.sh
+            initialDelaySeconds: 3
+            periodSeconds: 3
+

@@ -1,0 +1,191 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ibm-monitoring-dataprovider-mgmt-operator
+  labels:
+    app.kubernetes.io/name: ibm-monitoring-dataprovider-mgmt-operator
+    app.kubernetes.io/instance: ibm-monitoring-dataprovider-mgmt-operator
+    app.kubernetes.io/managed-by: ibm-monitoring-dataprovider-mgmt-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: ibm-monitoring-dataprovider-mgmt-operator
+  template:
+    metadata:
+      labels:
+        name: ibm-monitoring-dataprovider-mgmt-operator
+        app.kubernetes.io/name: ibm-monitoring-dataprovider-mgmt-operator
+        app.kubernetes.io/instance: ibm-monitoring-dataprovider-mgmt-operator
+        app.kubernetes.io/managed-by: ibm-monitoring-dataprovider-mgmt-operator
+      annotations:
+        cloudpakId: "7f6eda41081c4e08a255be1f0b4aef2d"
+        cloudpakName: "IBM Cloud Pak for Multicloud Management"
+        cloudpakVersion: "2.3"
+        productID: "b6fe4d9823294584822155cd2595445b"
+        productName: "CP4MCM Advanced Monitoring"
+        productVersion: "2.3"
+        productMetric: "MANAGED_VIRTUAL_SERVER"
+        productChargedContainers: "All"
+        productCloudpakRatio: "1:1"
+        olm.relatedImage.autconfigoperator: cp.icr.io/cp/cp4mcm/ibm-dc-autoconfig-operator@sha256:9ded1c49f668de78144f95fc4ea3fd6506b549b32bc537683995f0f0757a2859
+        olm.relatedImage.k8monitor: cp.icr.io/cp/cp4mcm/k8-monitor@sha256:d908f0e56fdbb9afb397bd84c6dd27c995a5655329e392fb64ec00f2f2da97a0
+        olm.relatedImage.k8operator: cp.icr.io/cp/cp4mcm/k8sdc-operator@sha256:becb062b080d0cb5d6e9e1ade2e8edbf92d4ee0c50691396b1c36c797ca36137
+        olm.relatedImage.reloader: cp.icr.io/cp/cp4mcm/reloader@sha256:48779865a71a804fa1e0a1bdb3a7334d54ee93f95d92101f6fba8354e796552f
+        olm.relatedImage.uacloud: cp.icr.io/cp/cp4mcm/ua-cloud-monitoring@sha256:4585816853cdaa0cfc398876e1017dca22692b201f5b05282366c9d3d32a122e
+        olm.relatedImage.uaoperator: cp.icr.io/cp/cp4mcm/ua-operator@sha256:015a42fab6f3c5a0519abfcb2dc273509bc745ed0f52f4c1bfb7652e6a94710d
+        olm.relatedImage.uaplugins: cp.icr.io/cp/cp4mcm/ua-plugins@sha256:55277f05872a904199c369259e70402eef390eb6526ec4b26fe2af14abcc52e1
+        olm.relatedImage.uarepo: cp.icr.io/cp/cp4mcm/ua-repo@sha256:2e04b093eb512c9c516ebf138f33ddf21cf972e3ab8173b61234c78dbe501b87
+    spec:
+      serviceAccountName: ibm-monitoring-dataprovider-mgmt-operator
+      hostNetwork: false
+      hostPID: false
+      hostIPC: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: beta.kubernetes.io/arch
+                operator: In
+                values:
+                - amd64
+                - ppc64le
+                - s390x
+      containers:
+        - name: ansible
+          command:
+          - /usr/local/bin/ao-logs
+          - /tmp/ansible-operator/runner
+          - stdout
+          # Replace this with the built image name
+          image: cp.icr.io/cp/cp4mcm/ibm-monitoring-dataprovider-mgmt-operator@sha256:38c703640ead573c0fc8c766a2fa48ed3a2de90f30a6c2ade9cbbd8ec747ff1e
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+          - mountPath: /tmp/ansible-operator/runner
+            name: runner
+            readOnly: true
+          livenessProbe:
+            exec:
+              command:
+                - ls
+            failureThreshold: 3
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            exec:
+              command:
+                - ls
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 300m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 256Mi
+          securityContext:
+            privileged: false
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+        - name: operator
+          # Replace this with the built image name
+          image: cp.icr.io/cp/cp4mcm/ibm-monitoring-dataprovider-mgmt-operator@sha256:38c703640ead573c0fc8c766a2fa48ed3a2de90f30a6c2ade9cbbd8ec747ff1e
+          imagePullPolicy: "IfNotPresent"
+          volumeMounts:
+          - mountPath: /tmp/ansible-operator/runner
+            name: runner
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              value: "ibm-monitoring-dataprovider-mgmt-operator"
+            - name: ANSIBLE_GATHERING
+              value: explicit
+            - name: AUTO_CONFIG
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['olm.relatedImage.autconfigoperator']
+            - name: K8MONITOR
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['olm.relatedImage.k8monitor']
+            - name: K8SDC_OPERATOR
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['olm.relatedImage.k8operator']
+            - name: RELOADER
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['olm.relatedImage.reloader']
+            - name: UACLOUD
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['olm.relatedImage.uacloud']
+            - name: UAOPERATOR
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['olm.relatedImage.uaoperator']
+            - name: UAREPO
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['olm.relatedImage.uarepo']
+            - name: UAPLUGINS
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['olm.relatedImage.uaplugins']
+          livenessProbe:
+            exec:
+              command:
+                - ls
+            failureThreshold: 3
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 1
+          readinessProbe:
+            exec:
+              command:
+                - ls
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 1500m
+              memory: 768Mi
+            requests:
+              cpu: 800m
+              memory: 512Mi
+          securityContext:
+            privileged: false
+            readOnlyRootFilesystem: false
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: runner
+          emptyDir: {}

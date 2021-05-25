@@ -69,7 +69,15 @@ All notable changes to this project will be documented in this file.
   - `scripts/backupcouch.sh`
   - `scripts/restorecouch.sh`
 
-## [0.12.0] - 2021-04-13
+## [0.11.1] - 2021-04-30
+- Updated grc-policy-updates.sh script to be consistent with RHACM policy changes.
+  - `scripts/grc-policy-updates.sh`
+
+## [0.11.2] - 2021-05-03
+- Added vaultfeeder tool to configure HashiCorp Vault and push target VM credentials in it for IBM CloudPak for Multicloud Management VM policy controller 2.0 onwards.
+  - `vaultfeeder`
+
+## [0.12.0] - 2021-05-25
 - Updated the uninstall and cleanup scripts for ChatOps removal
   - `scripts/cp4mcm-cleanup-utility.sh`
   - `scripts/uninstall.sh`
