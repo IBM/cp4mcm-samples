@@ -76,3 +76,8 @@ All notable changes to this project will be documented in this file.
 ## [0.11.2] - 2021-05-03
 - Added vaultfeeder tool to configure HashiCorp Vault and push target VM credentials in it for IBM CloudPak for Multicloud Management VM policy controller 2.0 onwards.
   - `vaultfeeder`
+
+## [0.12.0] - 2021-05-25
+- Updated the uninstall and cleanup scripts for ChatOps removal
+  - `scripts/cp4mcm-cleanup-utility.sh`
+  - `scripts/uninstall.sh`
