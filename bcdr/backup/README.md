@@ -7,7 +7,7 @@ You need to install the `kubectl`, `oc`, `velero`, and `Helm` CLI on the worksta
 
 ## Procedure
 
-### 1 Clone the GitHub repository
+### 1. Clone the GitHub repository
 
 ```
 git clone https://github.com/IBM/cp4mcm-samples.git
@@ -218,7 +218,7 @@ Where:
 
       - `<BACKUP_NAME>` is the name of the Backup.
 
-## Notes:
+## Notes
 
 - All the Kubernetes resources from all the namespaces except the following namespaces will be backed up:
 
@@ -299,3 +299,90 @@ Where:
    - IBM Common Services
       - MongoDB
       - Prometheus 
+
+## Troubleshooting
+
+### 1. Command `sh install-velero.sh` failed with the following error:
+
+```
+Error: admission webhook "trust.hooks.securityenforcement.admission.cloud.ibm.com" denied the request:
+Deny "docker.io/velero/velero:v1.5.3", no matching repositories in ClusterImagePolicy and no ImagePolicies in the "velero" namespace
+```
+
+As a fix perform the following steps:
+
+   1. Uninstall `Velero` by running the following command:
+
+      ```
+      helm uninstall velero -n velero
+      ```
+
+   2. Create a file `velero-policy.yaml` and add the following content to it:
+   
+      ```
+      apiVersion: securityenforcement.admission.cloud.ibm.com/v1beta1
+      kind: ClusterImagePolicy
+      metadata:
+        name: velero-cluster-image-policy
+      spec:
+       repositories:
+        - name: "http://docker.io/velero/*"
+          policy:
+      ```
+   
+   3. Apply the policy by running the following command:
+   
+      ```
+      oc apply -f velero-policy.yaml
+      ```
+
+   4. Install Velero by running the following command:
+
+      ```
+      sh install-velero.sh
+      ```
+
+### 2. Command `helm install backup-job clusterbackup-0.1.0.tgz` failed with the following error:
+
+```
+Error: admission webhook "trust.hooks.securityenforcement.admission.cloud.ibm.com" denied the request:
+Deny "<Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest", no matching repositories in ClusterImagePolicy and no ImagePolicies in the "velero" namespace
+```
+
+Where:
+
+   - `<Image Registry Server URL>` is the image registry server URL.
+   - `<Repository>` is the repository where you put the image.
+
+As a fix perform the following steps:
+   
+   1. Uninstall `backup-job` by running the following command:
+
+      ```
+      helm uninstall backup-job -n velero
+      ```
+
+   2. Create a file `backup-image-policy.yaml` and add the following content to it:
+   
+      ```
+      apiVersion: securityenforcement.admission.cloud.ibm.com/v1beta1
+      kind: ClusterImagePolicy
+      metadata:
+        name: backup-image-policy
+      spec:
+       repositories:
+        - name: "http://<Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest"
+          policy:
+      ```
+   
+   3. Apply the policy by running the following command:
+   
+      ```
+      oc apply -f backup-image-policy.yaml
+      ```
+
+   4. Deploy the backup job by running the following command:
+
+      ```
+      helm install backup-job clusterbackup-0.1.0.tgz
+      ```
