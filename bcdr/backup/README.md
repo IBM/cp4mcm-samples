@@ -3,7 +3,7 @@
 Follow the steps to back up IBM Cloud Pak® for Multicloud Management.
 
 ## Before you begin
-You need to install the `kubectl`, `oc`, `velero`, and `Helm` CLI on the workstation machine. From the workstation machine, you have to initialize and monitor the backup of IBM Cloud Pak® for Multicloud Management.
+You need to install the `kubectl`, `oc`, `velero`, and `Helm` CLI on a workstation machine, where you can access the OpenShift cluster, initiate and monitor the backup of IBM Cloud Pak® for Multicloud Management.
 
 ## Procedure
 
@@ -124,13 +124,13 @@ Where:
   2. Update the following parameters in `values.yaml`, `values.yaml` is located in `./helm`:
 
      - repository: Name of the image for example `xy.abc.io/cp4mcm/cp4mcm-bcdr`. Here `xy.abc.io` is the image registry server URL, `cp4mcm` is the name of the repository and `cp4mcm-bcdr` is the name of the Docker image.
-     - pullPolicy: Policy to determine when to pull the image from the image registry server. For example, To force pull the image use the `Always` policy. 
+     - pullPolicy: Policy to determine when to pull the image from the image registry server. For example, To force pull the image, use the `Always` policy. 
      - tag: Tag of the Docker image for example `latest`.
-     - pullSecret: Name of the image pull secret. Refer to the value from step 5.
-     - schedule: Cron expression for automated backup. For example, To take backup once a day use the `0 0 * * *` Cron expression.
+     - pullSecret: Name of the image pull secret. Refer to the value from step 6.
+     - schedule: Cron expression for automated backup. For example, To take backup once a day, use the `0 0 * * *` Cron expression.
      - storageClassName: Default storage class on the OpenShift cluster. For example `gp2`.  Use the `oc get sc` command to get the list of available Storage Classes on the OpenShift cluster.
 
-  3. Update the `backup-config.yaml`, which is located in `./helm/templates` If you want to take the backup of additional PVs. For example, To take backup of MySQL add a new JSON entry in the `details` array of element `pod-annotation-details.json` as follows: 
+  3. Update the `backup-config.yaml`, which is located in `./helm/templates` If you want to take the backup of additional PVs. For example, To take backup of MySQL, add a new JSON entry in the `details` array of element `pod-annotation-details.json` as follows: 
 
      ```
      {
@@ -148,7 +148,7 @@ Where:
       helm package ./helm
       ```
 
-### 8. Trigger automated backup
+### 8. Trigger an automated backup
 
   1. Go to the directory `<Path of cp4mcm-samples>/bcdr/backup` by running the following command:
 
@@ -184,9 +184,13 @@ Where:
 
       Where:
 
-      - `<BACKUP_NAME>` is the name of the Backup.
+      - `<BACKUP_NAME>` is the name of the Backup. You can see the backup name after the backup job is complete. For example, you might see the backup name `cp4mcm-backup-1622193915` in the backup job log as follows:
+        
+        ```
+        Waiting for backup cp4mcm-backup-1622193915 to complete
+        ```
 
-### 10. Trigger on-demand backup
+### 10. Trigger an on-demand backup
 
   1. Deploy the on-demand backup job by running the following command: 
     
@@ -194,7 +198,7 @@ Where:
      kubectl create job --from=cronjob/backup-job on-demand-backup-job -n velero
       ```
      - This step is optional. Use only when you don't want to wait till the execution of the next scheduled backup job.
-     - Deployment of an automated backup job is a prerequisite for the on-demand job. 
+     - Deployment of an automated backup job is a prerequisite for the on-demand job. Only after you initiate an automated backup job, then you can trigger an on-demand backup. 
 
   2. Check the on-demand backup pods status by running the following command:
 
@@ -216,7 +220,11 @@ Where:
 
      Where:
 
-      - `<BACKUP_NAME>` is the name of the Backup.
+      - `<BACKUP_NAME>` is the name of the Backup. You can see the backup name after the on-demand backup job is complete. For example, you might see the backup name `cp4mcm-backup-1622193915` in the on-demand backup job log as follows:
+        
+        ```
+        Waiting for backup cp4mcm-backup-1622193915 to complete
+        ```
 
 ## Notes
 
