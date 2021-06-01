@@ -1,0 +1,9 @@
+{
+    "access_key_id": "",
+    "secret_access_key": "",
+    "bucket_name": "",
+    "bucket_url": "",
+    "bucket_region": "",
+    "velero_helm_chart_url": "https://vmware-tanzu.github.io/helm-charts",
+    "velero_helm_chart_version": "2.14.7"
+}
