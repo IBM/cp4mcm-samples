@@ -97,7 +97,7 @@
 ## 2. Install Common Services and IBM Cloud Pak for Multicloud Management
 
   1. Install RHCAM and enable the `observability` feature.
-  2. Install the Common Services operator, and set the `mongodb` pod count as 1 in Common Services installation instance as shown here: 
+  2. Install the Common Services operator, and update the Common Services installation instance to include the `mongodb` services with replica count 1 as shown here: 
 
      ```
       apiVersion: operator.ibm.com/v3
@@ -163,7 +163,7 @@
    oc apply -f mongo-restore-dbdump.yaml
    ```
 
-2. After IBM common services database is restored, set the MongoDB cluster count to `default` by modifying common services installation YAML.
+2. After IBM common services database is restored, modify the common services installation yaml to set the desired replica count for `mongodb`. It can be set to the same value as in the backup cluster or any other value as per your requirement.
 3. Enable the Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
 
 ### 4. Restore Infrastructure Management.
