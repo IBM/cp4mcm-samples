@@ -1,0 +1,25 @@
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ibm-management-monitoring.v2.2-managed-cluster
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - cluster.open-cluster-management.io
+    resources:
+      - '*'
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ibm-management-monitoring.v2.2-managed-cluster
+subjects:
+  - kind: ServiceAccount
+    name: monitoringdeploy
+    namespace: management-monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ibm-management-monitoring.v2.2-managed-cluster
