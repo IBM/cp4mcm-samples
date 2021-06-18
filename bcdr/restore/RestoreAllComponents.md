@@ -97,24 +97,7 @@
 ## 2. Install Common Services and IBM Cloud Pak for Multicloud Management
 
   1. Install RHCAM and enable the `observability` feature.
-  2. Install the Common Services operator, and update the Common Services installation instance to include the `mongodb` services with replica count 1 as shown here: 
-
-     ```
-      apiVersion: operator.ibm.com/v3
-      kind: CommonService
-      metadata:
-       name: common-service
-       namespace: ibm-common-services
-      spec:
-       size: medium
-       services:
-       - name: ibm-mongodb-operator
-         spec:
-          mongoDB:
-            replicas: 1
-     ```
-
-   3. Install IBM Cloud Pak for Multicloud Management operator and create its CR by enabling different components. For example, enable Infrastructure Management, Managed Services, Service Library, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and don't enable Monitoring. For Managed Services, specify the existing claim name details as follows:
+  2. Install IBM Cloud Pak for Multicloud Management operator and create its CR by enabling different components. For example, enable Infrastructure Management, Managed Services, Service Library, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and don't enable Monitoring. For Managed Services, specify the existing claim name details as follows:
 
       ```
         - enabled: true
@@ -153,7 +136,7 @@
                   useDynamicProvisioning: true
       ```
 
-   4. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
+   3. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
 
 ### 3. Restore IBM Common Services database
 
@@ -163,8 +146,7 @@
    oc apply -f mongo-restore-dbdump.yaml
    ```
 
-2. After IBM common services database is restored, modify the common services installation YAML to set the desired replica count for `mongodb`. It can be set to the same value as in the backup cluster or any other value as per your requirement.
-3. Enable the Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
+2. Enable the Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
 
 ### 4. Restore Infrastructure Management
 

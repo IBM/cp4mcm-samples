@@ -88,36 +88,16 @@
 2. Install Common Services and IBM Cloud Pak for Multicloud Management
 
     1. Install RHCAM and enable the `observability` feature.
-    2. Install the Common Services operator, and update the Common Services installation instance to include the `mongodb` services with replica count 1 as shown here: 
-
-       ```
-        apiVersion: operator.ibm.com/v3
-        kind: CommonService
-        metadata:
-         name: common-service
-         namespace: ibm-common-services
-        spec:
-         size: medium
-         services:
-         - name: ibm-mongodb-operator
-           spec:
-            mongoDB:
-              replicas: 1
-       ```
-
-     3. Install IBM Cloud Pak for Multicloud Management operator and create its CR.
-     4. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
+    2. Install IBM Cloud Pak for Multicloud Management operator and create its CR.
+    3. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
 
 3. Restore IBM Common Services database.
 
-     1. Run `mongo-restore-dbdump` job for common services database to restore. The `mongo-restore-dbdump.yaml` file is available in `<Path of cp4mcm-samples>/bcdr/restore/scripts/cs` folder, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
+    Run `mongo-restore-dbdump` job for common services database to restore. The `mongo-restore-dbdump.yaml` file is available in `<Path of cp4mcm-samples>/bcdr/restore/scripts/cs` folder, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
 
         ```
         oc apply -f mongo-restore-dbdump.yaml
         ```
-
-     2. After IBM common services database is restored, modify the common services installation YAML to set the desired replica count for `mongodb`. It can be set to the same value as in the backup cluster or any other value as per your requirement.
-
 
 ### Restore Monitoring
 1. Uninstall Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
