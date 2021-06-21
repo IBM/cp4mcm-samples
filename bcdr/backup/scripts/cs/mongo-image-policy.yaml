@@ -1,0 +1,8 @@
+apiVersion: securityenforcement.admission.cloud.ibm.com/v1beta1
+kind: ClusterImagePolicy
+metadata:
+  name: mongo-image-policy
+spec:
+ repositories:
+  - name: "quay.io/opencloudio/ibm-mongodb@sha256:5004b6073efd2df5eae51431e866123d386495aea1b4baa2dcac9fcbaaf7eb83"
+    policy:

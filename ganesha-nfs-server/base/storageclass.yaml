@@ -1,0 +1,8 @@
+
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: ganesha-nfs
+provisioner: ganesha/nfs-provisioner
+mountOptions:
+  - vers=4.1

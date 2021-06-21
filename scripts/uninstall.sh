@@ -392,9 +392,15 @@ removeChatOps() {
     echo "Attempting to delete all resources associated with ibm-management-sre-chatops" | tee -a "$logpath"
     deleteKind "Chatops"
     local result=$?
-    deleteResource configmap "${ns}" chatops-st2-pack-configs "false" 300
+    deleteResource secret "${ns}" chatops-st2-pack-configs "false" 300
     result=$(( result + $? ))
     deleteResource secret "${ns}" chatops-st2chatops "false" 300
+    result=$(( result + $? ))
+	deleteResource "pvc" "management-operations" "datadir-chatops-mongodb-ha-0" "false" 300
+    result=$(( result + $? ))
+    deleteResource "pvc" "management-operations" "datadir-chatops-mongodb-ha-1" "false" 300
+    result=$(( result + $? ))
+    deleteResource "pvc" "management-operations" "datadir-chatops-mongodb-ha-2" "false" 300
     result=$(( result + $? ))
     if [[ "${result}" -ne 0 ]]; then
 	echo "$result ibm-management-sre-chatops resources may remain" | tee -a "$logpath"

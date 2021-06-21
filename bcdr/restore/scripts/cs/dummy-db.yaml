@@ -1,0 +1,25 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  namespace: ibm-common-services
+  name: dummy-db
+  labels:
+    app: dummy-db
+spec:
+  containers:
+    - image: nginx:latest
+      #command: ["rm -rf /dump/.velero"]
+      name: nginx
+      volumeMounts:
+        - name: mongodump
+          mountPath: "/dump"
+      lifecycle:
+            postStart:
+              exec:
+                command: ["bash", "-c", "rm -rf /dump/.velero"]
+  volumes:
+    - name: mongodump
+      persistentVolumeClaim:
+        claimName: my-mongodump
+
+#oc create secret docker-registry repositorysecretkey --docker-username=amitabhprasad --docker-password=a1319172 --docker-server=docker.io

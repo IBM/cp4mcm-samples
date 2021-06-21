@@ -1,0 +1,13 @@
+namespace: default
+resources:
+- scc.yaml
+- psp.yaml
+- clusterrole.yaml
+- clusterrolebinding.yaml
+- role.yaml
+- rolebinding.yaml
+- pvc.yaml
+- serviceaccount.yaml
+- service.yaml
+- deployment.yaml
+- storageclass.yaml
