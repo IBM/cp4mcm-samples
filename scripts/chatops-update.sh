@@ -341,8 +341,10 @@ slack=$release-st2chatops
 [[ $# -eq 0 ]] && print_help
 
 parse_commandline "$@"
-oclogin_verify
+
 checkIfocANDORkubectlInstalled
+oclogin_verify
+
 update_slack_connection
 update_integrate_settings
 clean_up
