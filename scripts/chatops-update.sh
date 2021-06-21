@@ -233,7 +233,7 @@ update_slack_connection()
 
         $ocOrKubectl get secret $slack -n $namespace -o yaml > /tmp/slack.yaml 
 
-        old_slack_token=$(oc get secret $slack -n $namespace -o yaml |awk '/HUBOT_SLACK_TOKEN:/{print $2}'|head -n 1)
+        old_slack_token=$($ocOrKubectl get secret $slack -n $namespace -o yaml |awk '/HUBOT_SLACK_TOKEN:/{print $2}'|head -n 1)
         #echo "old slack token is: $old_slack_token" | tee -a "$logpath"
 
         echo "Updating the secret..."  | tee -a "$logpath"      
