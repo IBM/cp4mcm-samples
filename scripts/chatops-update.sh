@@ -133,20 +133,20 @@ update_integrate_settings()
 
     if [[ -n "$new_cem_url" ]]||[[ -n "$new_cem_apikey" ]]||[[ -n "$new_cem_apipass" ]]||[[ -n "$new_pd_apikey" ]]||[[ -n "$new_pd_servicekey" ]]; then
         echo "Getting the cem/pagerduty configuration..."  | tee -a "$logpath"
-        kubectl get secret $integration -n $namespace > /dev/null 2>&1
+        $ocOrKubectl get secret $integration -n $namespace > /dev/null 2>&1
         result=$?
         if [[ ${result} -ne 0 ]]; then
             echo "ERROR: secret: $integration in namespace: $namespace does not exist" | tee -a "$logpath"
             exit 1
         fi
-        kubectl get secret $integration -n $namespace -o yaml > /tmp/integration.yaml 
+        $ocOrKubectl get secret $integration -n $namespace -o yaml > /tmp/integration.yaml 
 
         if [[ -n "$new_cem_url" ]]||[[ -n "$new_cem_apikey" ]]||[[ -n "$new_cem_apipass" ]]; then
-            kubectl get secret $integration -n $namespace -o yaml | awk '/cem_ibm.yaml:/{print $2}' | head -n 1 | base64 -d > /tmp/cem.yaml
+            $ocOrKubectl get secret $integration -n $namespace -o yaml | awk '/cem_ibm.yaml:/{print $2}' | head -n 1 | base64 -d > /tmp/cem.yaml
         fi
 
         if [[ -n "$new_pd_apikey" ]]||[[ -n "$new_pd_servicekey" ]]; then
-            kubectl get secret $integration -n $namespace -o yaml | awk '/pagerduty.yaml:/{print $2}' | head -n 1 | base64 -d > /tmp/pagerduty.yaml
+            $ocOrKubectl get secret $integration -n $namespace -o yaml | awk '/pagerduty.yaml:/{print $2}' | head -n 1 | base64 -d > /tmp/pagerduty.yaml
         fi
 
         echo "Updating the secret..."  | tee -a "$logpath"
@@ -171,10 +171,10 @@ update_integrate_settings()
         fi
 
         echo "Applying the updated secret..."  | tee -a "$logpath"
-        kubectl apply -f /tmp/integration.yaml -n $namespace 
+        $ocOrKubectl apply -f /tmp/integration.yaml -n $namespace 
 
         echo "Restarting the st2client pod..."  | tee -a "$logpath"
-        kubectl get pod -n $namespace | grep st2client | awk '{ print $1}' | xargs kubectl delete pod -n $namespace 
+        $ocOrKubectl get pod -n $namespace | grep st2client | awk '{ print $1}' | xargs $ocOrKubectl delete pod -n $namespace 
         result=$?
         if [[ ${result} -ne 0 ]]; then
             echo "ERROR: st2client pod in namespace: $namespace does not exist" | tee -a "$logpath"
@@ -182,7 +182,7 @@ update_integrate_settings()
         fi
 
         while [ $num -lt $final ]; do
-            res=$(kubectl get po -n $namespace -l release=$release --no-headers | grep st2client | egrep -v 'Running')
+            res=$($ocOrKubectl get po -n $namespace -l release=$release --no-headers | grep st2client | egrep -v 'Running')
             let num=$num+1
             if [[ -z "$res" ]]; then         # Completed
                 num=$final
@@ -195,8 +195,8 @@ update_integrate_settings()
         if [[ $flag -eq 0 ]]; then 
             echo "st2client pod restarted successfully" | tee -a "$logpath"
             echo "Reloading Chatops with new settings..."  | tee -a "$logpath"
-            client_pods=$(kubectl get po -n $namespace | grep st2client | awk '{ print $1}')
-            result=$(kubectl -n $namespace exec -it $client_pods -- st2ctl reload 2>/dev/null | grep -c terminated)
+            client_pods=$($ocOrKubectl get po -n $namespace | grep st2client | awk '{ print $1}')
+            result=$($ocOrKubectl -n $namespace exec -it $client_pods -- st2ctl reload 2>/dev/null | grep -c terminated)
 
             if [[ $result -ne 0 ]]; then
                 echo "ERROR: Failed to reload new integration settings" | tee -a "$logpath" 
@@ -224,14 +224,14 @@ update_slack_connection()
     if [[ -n "$new_slack_token" ]]; then
         new_token=$(echo -n $new_slack_token|base64)
         echo "Getting the slack configuration..." | tee -a "$logpath"
-        kubectl get secret $slack -n $namespace > /dev/null 2>&1
+        $ocOrKubectl get secret $slack -n $namespace > /dev/null 2>&1
         result=$?
         if [[ ${result} -ne 0 ]]; then
             echo "ERROR: secret: $slack in namespace: $namespace does not exist" | tee -a "$logpath"
             exit 1
         fi
 
-        kubectl get secret $slack -n $namespace -o yaml > /tmp/slack.yaml 
+        $ocOrKubectl get secret $slack -n $namespace -o yaml > /tmp/slack.yaml 
 
         old_slack_token=$(oc get secret $slack -n $namespace -o yaml |awk '/HUBOT_SLACK_TOKEN:/{print $2}'|head -n 1)
         #echo "old slack token is: $old_slack_token" | tee -a "$logpath"
@@ -240,10 +240,10 @@ update_slack_connection()
         sed -i -e "s#HUBOT_SLACK_TOKEN: $old_slack_token#HUBOT_SLACK_TOKEN: $new_token#" /tmp/slack.yaml 
 
         echo "Applying the updated secret..." | tee -a "$logpath"
-        kubectl apply -f /tmp/slack.yaml -n $namespace 
+        $ocOrKubectl apply -f /tmp/slack.yaml -n $namespace 
 
         echo "Restarting the st2chatops pod" | tee -a "$logpath"
-        kubectl get pod -n $namespace | grep st2chatops | awk '{ print $1}' | xargs kubectl delete pod -n $namespace
+        $ocOrKubectl get pod -n $namespace | grep st2chatops | awk '{ print $1}' | xargs $ocOrKubectl delete pod -n $namespace
         result=$?
         if [[ ${result} -ne 0 ]]; then
             echo "ERROR: st2chatops pod in namespace: $namespace does not exist" | tee -a "$logpath"
@@ -251,7 +251,7 @@ update_slack_connection()
         fi
 
         while [ $num -lt $final ]; do
-            res=$(kubectl get po -n $namespace -l release=$release --no-headers | grep st2chatops | egrep -v 'Running')
+            res=$($ocOrKubectl get po -n $namespace -l release=$release --no-headers | grep st2chatops | egrep -v 'Running')
             let num=$num+1
             if [[ -z "$res" ]]; then         # Completed
                 num=$final
@@ -271,6 +271,32 @@ update_slack_connection()
 }
 
 ###
+# Check if oc or kubectl is installed
+###
+checkIfocANDORkubectlInstalled() 
+{
+    which oc > /dev/null 2>&1
+    local result1=$?
+    which kubectl > /dev/null 2>&1
+    local result2=$?
+    if [[ "${result1}" -ne 0 && "${result2}" -ne 0 ]]; then
+	    echo "ERROR: Neither oc nor kubectl could be found in the env; ensure that either of the two programs is available in the env" | tee -a "$logpath"
+        echo "" | tee -a "$logpath"
+	    exit 1
+    elif [[ "${result1}" -eq 0 ]]; then
+	    echo "Found the oc binary; using it to interact with cluster" | tee -a "$logpath"
+	    echo "" | tee -a "$logpath"
+	    ocOrKubectl="oc"
+	    return 0
+    else
+	    echo "Found the kubectl binary; using it to interact with cluster" | tee -a "$logpath"
+	    echo "" | tee -a "$logpath"
+	    ocOrKubectl="kubectl"
+	    return 0
+    fi
+}
+
+###
 # Check if oc login 
 ###
 oclogin_verify() 
@@ -282,6 +308,8 @@ oclogin_verify()
         exit 1
     fi
 }
+
+
 
 
 ###
@@ -303,6 +331,8 @@ timestamp=`date +%Y%m%d%H%M%S`
 logs="chatops-template-update."
 logpath="/tmp/$logs$timestamp.txt"
 
+ocOrKubectl=""
+
 release=chatops
 namespace=management-operations
 integration=$release-st2-pack-configs
@@ -311,7 +341,10 @@ slack=$release-st2chatops
 [[ $# -eq 0 ]] && print_help
 
 parse_commandline "$@"
+
+checkIfocANDORkubectlInstalled
 oclogin_verify
+
 update_slack_connection
 update_integrate_settings
 clean_up
