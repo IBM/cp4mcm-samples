@@ -3,7 +3,7 @@
 Follow the steps to back up IBM Cloud Pak® for Multicloud Management.
 
 ## Before you begin
-You need to install the `kubectl`, `oc`, `velero`, and `Helm` CLI on a workstation machine, where you can access the OpenShift cluster, initiate and monitor the backup of IBM Cloud Pak® for Multicloud Management.
+You need to install the `kubectl`, `oc`, `velero`, `jq`, and `Helm` CLI on a workstation machine, where you can access the OpenShift cluster, initiate and monitor the backup of IBM Cloud Pak® for Multicloud Management.
 
 ## Procedure
 
@@ -334,7 +334,7 @@ As a fix perform the following steps:
         name: velero-cluster-image-policy
       spec:
        repositories:
-        - name: "http://docker.io/velero/*"
+        - name: "docker.io/velero/*"
           policy:
       ```
    
@@ -379,7 +379,7 @@ As a fix perform the following steps:
         name: backup-image-policy
       spec:
        repositories:
-        - name: "http://<Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest"
+        - name: "<Image Registry Server URL>/<Repository>/cp4mcm-bcdr:latest"
           policy:
       ```
    

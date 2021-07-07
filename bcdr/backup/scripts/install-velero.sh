@@ -40,12 +40,12 @@ checkPodReadyness(){
    pods=$(oc -n $namespace get pods -l $podLabel --no-headers | grep -F "1/1" -v)
 
    while [ "${pods}" ]; do
-     wait "5"
+     wait "10"
      echo "Waiting for Pods to be READY"
      pods=$(oc -n $namespace get pods -l $podLabel --no-headers | grep -F "1/1" -v)
-     ((counter++))
-     if [[ $counter -eq $retryCount ]]; then
-        echo "Pods in $namespace namespace are not READY hence terminating the restore process" | tee -a "$log_file"
+     counter=$((counter+1))
+     if [ $counter -eq $retryCount ]; then
+        echo "Pods in $namespace namespace are not READY hence terminating the restore process"
         exit 1
      fi
    done
@@ -91,7 +91,9 @@ installVelero() {
 
    rm -f bucket-creds
 
-   checkPodReadyness "velero" "app.kubernetes.io/name=velero" "25"
+   checkPodReadyness "velero" "app.kubernetes.io/name=velero" "30"
+
+   echo "Velero installed successfully."
 }
 
 installVelero

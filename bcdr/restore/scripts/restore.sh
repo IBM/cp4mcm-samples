@@ -53,6 +53,8 @@ imRestoreLabelValue=$(cat restore-data.json | jq -r '.imRestoreLabelValue')
 
 #Reading CAM restore info from config file
 camRestoreNamePrefix=$(cat restore-data.json | jq -r '.camRestoreNamePrefix')
+camRestoreLabelKey=$(cat restore-data.json | jq -r '.camRestoreLabelKey')
+camRestoreLabelValue=$(cat restore-data.json | jq -r '.camRestoreLabelValue')
 
 #Reading Monitoring restore info from config file
 sloAndSythenticCrdRestoreNamePrefix=$(cat restore-data.json | jq -r '.sloAndSythenticCrdRestoreNamePrefix')
@@ -143,7 +145,7 @@ installVelero() {
 
    rm -f bucket-creds
 
-   checkPodReadyness "velero" "app.kubernetes.io/name=velero" "25"
+   checkPodReadyness "velero" "app.kubernetes.io/name=velero" "60"
 }
 
 # This function is to check whether backup exists or not, it accepts one positional argument i.e backupName
@@ -208,7 +210,7 @@ csRestore() {
 
    # Creating dummy mongo db pod to delete .velero folder from dump
    oc apply -f cs/dummy-db.yaml
-   checkPodReadyness "ibm-common-services" "app=dummy-db" "5"
+   checkPodReadyness "ibm-common-services" "app=dummy-db" "60"
    oc delete -f cs/dummy-db.yaml
 }
 
@@ -290,48 +292,49 @@ imRestore(){
 
    #After restore change the cluster ingress subdomain in IM cr
    applicationDomain="inframgmtinstall".$ingressSubdomain
-   oc patch ManageIQ im-iminstall -n management-infrastructure-management -p "{\"spec\": {\"applicationDomain\": \"$applicationDomain\"}}" --type=merge
+   oc patch IMInstall im-iminstall -n management-infrastructure-management -p "{\"spec\": {\"applicationDomain\": \"$applicationDomain\"}}" --type=merge
 }
 
 # This function is to perform cam restore
 camRestore(){
+   
+   # Restore all Secret and ServiceAccount first
+   for i in {0..1}
+   do
+    camSaSecretRestoreName="cam-sa-secret-restore"-$(date '+%Y%m%d%H%M%S')
+    if [ "$i" == "0" ] || [[ "$restoreStatus" == 'PartiallyFailed' ]]; then
+    printRestoreStatus
+    camSaSecretRestoreCommand="velero restore create $camSaSecretRestoreName --from-backup $backupName --include-resources Secret,ServiceAccount --include-namespaces management-infrastructure-management"
+    $(echo $camSaSecretRestoreCommand)
+    # Wait for restore completion
+    waitTillRestoreCompletion "$camSaSecretRestoreName"
+    fi
+   done
 
-   # Restore management-infrastructure-management namespace which contains IM and CAM
+   # Restore CAM Pod, PV and PVC
    for i in {0..1}
    do
     camRestoreNamePrefix=$camRestoreNamePrefix-$(date '+%Y%m%d%H%M%S')
     if [ "$i" == "0" ] || [[ "$restoreStatus" == 'PartiallyFailed' ]]; then
     printRestoreStatus
-    camRestoreCommand="velero restore create $camRestoreNamePrefix --from-backup $backupName --include-namespaces management-infrastructure-management"
+    camRestoreCommand="velero restore create $camRestoreNamePrefix --from-backup $backupName --include-resources PersistentVolume,PersistentVolumeClaim,Pod --include-namespaces management-infrastructure-management -l $camRestoreLabelKey=$camRestoreLabelValue"
     $(echo $camRestoreCommand)
     # Wait for restore completion
     waitTillRestoreCompletion "$camRestoreNamePrefix"
     fi
    done
 
-   # Delete existing cam cr
-   oc delete ManageService cam -n management-infrastructure-management
-   wait "90"
+   # Delete all restored cam pods
+   kubectl delete pods --all -n management-infrastructure-management
 
-   # Deleting unwanted cam resources as it will get create again through cr creation
-   oc delete deploy --all -n management-infrastructure-management
-   oc delete rs --all -n management-infrastructure-management
-   oc delete pod --all -n management-infrastructure-management
-   oc delete sa --all -n management-infrastructure-management
-   oc delete secret --all -n management-infrastructure-management
-   oc delete cm --all -n management-infrastructure-management
-   oc delete svc --all -n management-infrastructure-management
-   oc delete route --all -n management-infrastructure-management
-   oc delete ingress --all -n management-infrastructure-management
-   oc delete sts --all -n management-infrastructure-management
-   oc delete roles cam-services-sa-psp cam-services-sa-view -n management-infrastructure-management
-   oc delete rolebinding cam-services-sa-psp-rb cam-services-sa-view-rb -n management-infrastructure-management
-   oc delete sts cam-controller-manager -n management-infrastructure-management
-   oc delete pvc postgresql -n management-infrastructure-management
-   oc delete Certificate cert -n management-infrastructure-management
-   oc delete NavConfiguration cam-common-header -n management-infrastructure-management
-   oc delete IMInstall im-iminstall -n management-infrastructure-management
-   oc delete ManageIq im-iminstall -n management-infrastructure-management
+   # Delete all restored serviceaccounts
+   kubectl delete sa --all -n management-infrastructure-management
+
+   # Delete all restored secrets
+   kubectl delete secret --all -n management-infrastructure-management
+
+   # Delete IM postgresql PVC. Although postgresql PVC won't be present but just for the safer side we are deleting this. If it is not present then the command will fail but that should be OK.
+   kubectl delete pvc postgresql -n management-infrastructure-management
 }
 
 # This function is to perform openldap restore
