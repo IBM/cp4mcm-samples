@@ -450,8 +450,6 @@ case "$1" in
     monitoringRestore
     ;;
     -a | --all-restore) echo "Starting CS, GRC, VA\MA and CAM restore" | tee -a "$log_file"
-    echo "Installing velero" | tee -a "$log_file"
-    installVelero
 
     echo "Checking backup exists or not" | tee -a "$log_file"
     checkBackup "$backupName"

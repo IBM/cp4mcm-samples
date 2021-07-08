@@ -3,7 +3,7 @@
 Follow the steps to back up IBM Cloud Pak® for Multicloud Management.
 
 ## Before you begin
-You need to install the `kubectl`, `oc`, `velero`, `jq`, and `Helm` CLI on a workstation machine, where you can access the OpenShift cluster, initiate and monitor the backup of IBM Cloud Pak® for Multicloud Management.
+You need to install the `kubectl`, `oc`, `velero`, `jq`, `git`, `docker` and `Helm` CLIs on a workstation machine, where you can access the OpenShift cluster, initiate and monitor the backup of IBM Cloud Pak® for Multicloud Management.
 
 ## Procedure
 
@@ -26,45 +26,8 @@ Where:
 
 ### 3. Install Velero
 
-  1. Deploy S3 bucket in the cloud where IBM Cloud Pak® for Multicloud Management is running. It should be S3 compliant object store such as AWS S3 bucket, IBM Cloud Object Store, minio.
-
-  2. Go to the directory `<Path of cp4mcm-samples>/bcdr/backup/scripts` by running the following command:
-
-     ```
-     cd <Path of cp4mcm-samples>/bcdr/backup/scripts
-     ```
-
-     You need to designate `<Path of cp4mcm-samples>` with the real path where you put the `cp4mcm-samples` GitHub repository.
-
-   3. Update the following parameters in `install-velero-config.json`:
-
-      - access_key_id: Access key id to connect to S3 bucket.
-      - secret_access_key: Secret access key to connect to S3 bucket.
-      - bucket_name: Name of the S3 bucket where backup data will be stored.
-      - bucket_url: URL to connect to S3 bucket.
-      - bucket_region: Region where S3 bucket is deployed.
-
-   4. Install Velero using the following command:
-
-      ```
-      sh install-velero.sh
-      ```
-
-   5. Check the velero pods status by running the following command:
-
-      ```
-      oc get pods -n velero
-      ```
-
-      `velero` and `restic` pods should be in a running state.
-
-   6. Check the status of `backupStorageLocation` by running the following command:
-
-      ```
-      oc get backupStorageLocation -n velero
-      ```
-
-      `backupStorageLocation` should be in available phase.
+  - For offline install, you can follow the steps mentioned [here](../velero/InstallVeleroOnAirgap.md)
+  - For online install, you can follow the steps mentioned [here](../velero/VeleroInstallation.md)
 
 ### 4. Build the Docker image
 

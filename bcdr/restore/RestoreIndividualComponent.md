@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Install the `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm` , and `cloudctl` CLI on the workstation machine, where you can access the OpenShift cluster, initiate and monitor the restoration of  IBM Cloud Pak® for Multicloud Management.
+- Install the `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm`, `jq`, `git` and `cloudctl` CLIs on the workstation machine, where you can access the OpenShift cluster, initiate and monitor the restoration of IBM Cloud Pak® for Multicloud Management.
 
 **Notes**
 - Common Services restore needs to be performed in a fresh cluster.
@@ -16,7 +16,23 @@
      git clone https://github.com/IBM/cp4mcm-samples.git
      ```
        
-2. Change the following values in the file `restore-data.json` based on real values. The file `restore-data.json` is available in the directory `<Path of cp4mcm-samples>/bcdr/restore/scripts`, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
+2. Log in to the OpenShift cluster
+
+     ```
+     oc login --token=<TOKEN> --server=<URL>
+     ```
+
+     Where:
+   
+     - `<TOKEN>` is the token that you use to log in to the OpenShift cluster.
+     - `<URL>` is the OpenShift server URL.
+
+3. Install Velero
+
+  - For offline install, you can follow the steps mentioned [here](../velero/InstallVeleroOnAirgap.md)
+  - For online install, you can follow the steps mentioned [here](../velero/VeleroInstallation.md)
+
+4. Change the following values in the file `restore-data.json` based on real values. The file `restore-data.json` is available in the directory `<Path of cp4mcm-samples>/bcdr/restore/scripts`, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
 
    ```
    "accessKeyId":"<bucket access key id>",
@@ -54,25 +70,13 @@
     "monitoringRestoreLabelValue":"monitoring"
     ```
 
-3. In the restored cluster, run the following command:
-
-    ```
-    oc login --token=<TOKEN> --server=<URL>
-    ```
-
-     Where:
-
-     - `<TOKEN>` is the token that you use to log in to the OpenShift cluster.
-     -  `<URL>` is the OpenShift server URL.
-
-
 ### Restore Common Services
 1. Restore Common Services.
 
     1. Go to the directory `<Path of cp4mcm-samples>/bcdr/restore/scripts` by running the following command, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
 
        ```
-       cd <Path of cp4mcm-samples>/bcdr/backup/scripts
+       cd <Path of cp4mcm-samples>/bcdr/restore/scripts
        ```
 
     2. Start the restoration process by running either of the following commands:
@@ -85,6 +89,7 @@
        ```
        bash restore.sh --cs-restore
        ```
+
 2. Install Common Services and IBM Cloud Pak for Multicloud Management
 
     1. Install RHCAM and enable the `observability` feature.
@@ -98,6 +103,12 @@
         ```
         oc apply -f mongo-restore-dbdump.yaml
         ```
+    
+    Wait untill the `mongo-restore-dbdump` job is in `Completed` status. You can run the following command to check the `mongo-restore-dbdump` job status.
+
+        ```
+        oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
+        ``` 
 
 ### Restore Monitoring
 1. Uninstall Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
