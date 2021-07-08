@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#*===================================================================
-#*
+#--------------------------------------------------------------------------
 # Licensed Materials - Property of IBM
-# (C) Copyright IBM Corp. 2020. All Rights Reserved.
+#
+# (C) Copyright IBM Corporation 2019.
+#
 # US Government Users Restricted Rights - Use, duplication or disclosure
-# restricted by GSA ADP Schedule Contract with IBM Corp.
-#*
-#*===================================================================
+# restricted by GSA ADP Schedule Contract with IBM Corporation.
+#--------------------------------------------------------------------------
 
 CURRENT=`pwd`
 log_file="$CURRENT/restore.log"
