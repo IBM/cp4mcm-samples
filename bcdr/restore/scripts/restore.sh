@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#--------------------------------------------------------------------------
+#*===================================================================
+#*
 # Licensed Materials - Property of IBM
-#
-# (C) Copyright IBM Corporation 2019.
-#
+# (C) Copyright IBM Corp. 2020. All Rights Reserved.
 # US Government Users Restricted Rights - Use, duplication or disclosure
-# restricted by GSA ADP Schedule Contract with IBM Corporation.
-#--------------------------------------------------------------------------
+# restricted by GSA ADP Schedule Contract with IBM Corp.
+#*
+#*===================================================================
 
 CURRENT=`pwd`
 log_file="$CURRENT/restore.log"
@@ -450,8 +450,6 @@ case "$1" in
     monitoringRestore
     ;;
     -a | --all-restore) echo "Starting CS, GRC, VA\MA and CAM restore" | tee -a "$log_file"
-    echo "Installing velero" | tee -a "$log_file"
-    installVelero
 
     echo "Checking backup exists or not" | tee -a "$log_file"
     checkBackup "$backupName"

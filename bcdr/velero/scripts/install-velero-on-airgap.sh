@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash  
 
 #--------------------------------------------------------------------------
 # Licensed Materials - Property of IBM
@@ -9,16 +9,12 @@
 # restricted by GSA ADP Schedule Contract with IBM Corporation.
 #--------------------------------------------------------------------------
 
-#!/bin/bash
-
 #Reading S3 Bucket configuration details
-ACCESS_KEY_ID=$(cat install-velero-config.json | jq -r '.access_key_id')
-SECRET_ACCESS_KEY=$(cat install-velero-config.json | jq -r '.secret_access_key') 
-BUCKET_NAME=$(cat install-velero-config.json | jq -r '.bucket_name') 
-BUCKET_URL=$(cat install-velero-config.json | jq -r '.bucket_url') 
-BUCKET_REGION=$(cat install-velero-config.json | jq -r '.bucket_region')
-VELERO_HELM_CHART_URL=$(cat install-velero-config.json | jq -r '.velero_helm_chart_url')
-VELERO_HELM_CHART_VERSION=$(cat install-velero-config.json | jq -r '.velero_helm_chart_version')
+ACCESS_KEY_ID=$(cat install-velero-on-airgap-config.json | jq -r '.access_key_id')
+SECRET_ACCESS_KEY=$(cat install-velero-on-airgap-config.json | jq -r '.secret_access_key') 
+BUCKET_NAME=$(cat install-velero-on-airgap-config.json | jq -r '.bucket_name') 
+BUCKET_URL=$(cat install-velero-on-airgap-config.json | jq -r '.bucket_url') 
+BUCKET_REGION=$(cat install-velero-on-airgap-config.json | jq -r '.bucket_region')
 
 # Waits for a specific time, Requires one positional argument "timeout"
 wait(){
@@ -61,14 +57,11 @@ installVelero() {
    echo "aws_access_key_id="$ACCESS_KEY_ID >> bucket-creds
    echo "aws_secret_access_key="$SECRET_ACCESS_KEY >> bucket-creds
 
-   # Adding velero helm repo
-   helm repo add vmware-tanzu $VELERO_HELM_CHART_URL
-
    # Creating velero project
    oc new-project velero
 
    # Installing velero
-   helm install velero --namespace velero --version $VELERO_HELM_CHART_VERSION \
+   helm install velero --namespace velero \
    --set configuration.provider=aws \
    --set-file credentials.secretContents.cloud=./bucket-creds \
    --set use-volume-snapshots=false \
@@ -81,19 +74,26 @@ installVelero() {
    --set configuration.backupStorageLocation.config.region=$BUCKET_REGION \
    --set configuration.backupStorageLocation.config.s3ForcePathStyle=true \
    --set configuration.backupStorageLocation.config.s3Url=$BUCKET_URL \
-   --set image.repository=velero/velero \
-   --set image.pullPolicy=IfNotPresent \
+   --set image.repository=localhost/velero/velero \
+   --set image.pullPolicy=Never \
    --set initContainers[0].name=velero-plugin-for-aws \
-   --set initContainers[0].image=velero/velero-plugin-for-aws:v1.0.0 \
+   --set initContainers[0].image=localhost/velero/velero-plugin-for-aws:v1.0.0 \
    --set initContainers[0].volumeMounts[0].mountPath=/target \
    --set initContainers[0].volumeMounts[0].name=plugins \
-   vmware-tanzu/velero
-
-   rm -f bucket-creds
+   --set initContainers[0].imagePullPolicy=Never \
+   --set configMaps.restic-restore-action-config.data.image=localhost/velero/velero-restic-restore-helper:v1.5.3 \
+   velero-2.14.7.tgz
 
    checkPodReadyness "velero" "app.kubernetes.io/name=velero" "30"
 
    echo "Velero installed successfully."
+   
+   # Deleting credential file
+   rm -f bucket-creds
+
+   # Adding required label to velero-restic-restore-action-config ConfigMap
+   oc label cm velero-restic-restore-action-config -n velero velero.io/plugin-config=""
+   oc label cm velero-restic-restore-action-config -n velero velero.io/restic=RestoreItemAction
 }
 
 installVelero
