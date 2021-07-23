@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - Install the `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm`, `jq`, `git` and `cloudctl` CLIs on the workstation machine, where you can access the OpenShift cluster, initiate and monitor the restoration of IBM Cloud Pak® for Multicloud Management.
+- If your environment has no access to Internet, you need to upload the `Nginx` image to all the worker nodes by following [Uploading the Nginx image in an air gap environment](../install/UploadNginxImageOnAirgap.md). The `Nginx` container is used to back up MongoDB that is running in the `ibm-common-services` namespace.
 
 **Notes**
 
@@ -35,19 +36,15 @@ Where:
 
 ### 3. Install Velero
 
-  - For offline install, you can follow the steps mentioned [here](../velero/InstallVeleroOnAirgap.md)
-  - For online install, you can follow the steps mentioned [here](../velero/VeleroInstallation.md)
+  - For offline install, you can follow the steps mentioned [here](../install/InstallVeleroOnAirgap.md)
+  - For online install, you can follow the steps mentioned [here](../install/VeleroInstallation.md)
 
 ### 4. Restore Common Services, Monitoring, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and Managed Services
       
 1. Change the following values in the file `restore-data.json` based on real values. The file `restore-data.json` is available in the directory `<Path of cp4mcm-samples>/bcdr/restore/scripts`, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
 
    ```
-   "accessKeyId":"<bucket access key id>",
-   "secretAccessKey":"<bucket secret access key>",
-   "bucketName":"<bucket name>",
-   "bucketUrl":"<bucket url>",
-   "bucketRegion":"<bucket region>",
+   "airGap": "<Indicates whether the install is online or offline. Set the value to true to install offline and false to install online>",
        
    "backupName":"<backup name>",
         
@@ -65,6 +62,7 @@ Where:
    For Example:
 
     ```
+    "airGap":"false",
     "backupName":"cp4mcm-backup-373383393",
 
     "ingressSubdomain":"apps.cp4mcm-restore.multicloud-apps.io",
@@ -97,12 +95,11 @@ Where:
        bash restore.sh --all-restore
        ```
 
-       After you run the command, it installs Velero first in the restored cluster, and then performs all the other restoration operations.
-
 ### 5. Install Common Services and IBM Cloud Pak for Multicloud Management
 
   1. Install RHCAM and enable the `observability` feature.
-  2. Install IBM Cloud Pak for Multicloud Management operator and create its CR by enabling different components. For example, enable Infrastructure Management, Managed Services, Service Library, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and don't enable Monitoring. For Managed Services, specify the existing claim name details as follows:
+  2. Install Common Services operator.
+  3. Install IBM Cloud Pak for Multicloud Management operator and create its CR by enabling different components. For example, enable Infrastructure Management, Managed Services, Service Library, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and don't enable Monitoring. For Managed Services, specify the existing claim name details as follows:
 
       ```
         - enabled: true
@@ -141,7 +138,7 @@ Where:
                   useDynamicProvisioning: true
       ```
 
-   3. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
+   4. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
 
 ### 6. Restore IBM Common Services database
 
@@ -153,9 +150,9 @@ Where:
 
    Wait untill the `mongo-restore-dbdump` job is in `Completed` status. You can run the following command to check the `mongo-restore-dbdump` job status.
 
-        ```
-        oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
-        ``` 
+   ```
+   oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
+   ``` 
 
 2. Enable the Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
 

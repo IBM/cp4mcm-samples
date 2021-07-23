@@ -9,7 +9,7 @@
 
 apiVersion: v1
 data:
-  backup_original.yaml: "apiVersion: velero.io/v1\nkind: Backup\nmetadata:\n  name: BACKUP-NAME\n  namespace: velero\nspec:\n  ttl: 72h0m0s\n  includeClusterResources: true\n  includedNamespaces:\n  - '*'\n  excludedNamespaces:\n  - openshift\n  - openshift-apiserver\n  - openshift-apiserver-operator\n  - openshift-authentication\n  - openshift-authentication-operator\n  - openshift-cloud-credential-operator\n  - openshift-cluster-machine-approver \n  - openshift-cluster-node-tuning-operator\n  - openshift-cluster-samples-operator\n  - openshift-cluster-storage-operator\n  - openshift-cluster-version  \n  - openshift-config \n  - openshift-config-managed\n  - openshift-console\n  - openshift-console-operator\n  - openshift-controller-manager \n  - openshift-controller-manager-operator\n  - openshift-dns\n  - openshift-dns-operator\n  - openshift-etcd\n  - openshift-image-registry\n  - openshift-infra\n  - openshift-ingress \n  - openshift-ingress-operator\n  - openshift-insights\n  - openshift-kni-infra\n  - openshift-kube-apiserver\n  - openshift-kube-apiserver-operator\n  - openshift-kube-controller-manager\n  - openshift-kube-controller-manager-operator\n  - openshift-kube-proxy\n  - openshift-kube-scheduler \n  - openshift-kube-scheduler-operator\n  - openshift-machine-api\n  - openshift-machine-config-operator\n  - openshift-marketplace\n  - openshift-monitoring\n  - openshift-multus\n  - openshift-network-operator\n  - openshift-node\n  - openshift-openstack-infra\n  - openshift-operator-lifecycle-manager\n  - openshift-operators\n  - openshift-ovirt-infra\n  - openshift-service-ca\n  - openshift-service-ca-operator\n  - openshift-service-catalog-apiserver-operator\n  - openshift-service-catalog-controller-manager-operator \n  - openshift-user-workload-monitoring\n  - velero\n  includedResources:\n  - '*'\n"
+  backup_original.yaml: "apiVersion: velero.io/v1\nkind: Backup\nmetadata:\n  name: BACKUP-NAME\n  namespace: velero\nspec:\n  ttl: {{ .Values.ttl }}\n  includeClusterResources: true\n  includedNamespaces:\n  - '*'\n  excludedNamespaces:\n  - openshift\n  - openshift-apiserver\n  - openshift-apiserver-operator\n  - openshift-authentication\n  - openshift-authentication-operator\n  - openshift-cloud-credential-operator\n  - openshift-cluster-machine-approver \n  - openshift-cluster-node-tuning-operator\n  - openshift-cluster-samples-operator\n  - openshift-cluster-storage-operator\n  - openshift-cluster-version  \n  - openshift-config \n  - openshift-config-managed\n  - openshift-console\n  - openshift-console-operator\n  - openshift-controller-manager \n  - openshift-controller-manager-operator\n  - openshift-dns\n  - openshift-dns-operator\n  - openshift-etcd\n  - openshift-image-registry\n  - openshift-infra\n  - openshift-ingress \n  - openshift-ingress-operator\n  - openshift-insights\n  - openshift-kni-infra\n  - openshift-kube-apiserver\n  - openshift-kube-apiserver-operator\n  - openshift-kube-controller-manager\n  - openshift-kube-controller-manager-operator\n  - openshift-kube-proxy\n  - openshift-kube-scheduler \n  - openshift-kube-scheduler-operator\n  - openshift-machine-api\n  - openshift-machine-config-operator\n  - openshift-marketplace\n  - openshift-monitoring\n  - openshift-multus\n  - openshift-network-operator\n  - openshift-node\n  - openshift-openstack-infra\n  - openshift-operator-lifecycle-manager\n  - openshift-operators\n  - openshift-ovirt-infra\n  - openshift-service-ca\n  - openshift-service-ca-operator\n  - openshift-service-catalog-apiserver-operator\n  - openshift-service-catalog-controller-manager-operator \n  - openshift-user-workload-monitoring\n  - velero\n  includedResources:\n  - '*'\n"
   config.json: |-
     [
       {
@@ -59,17 +59,17 @@ data:
         },
         {
           "namespace": "management-monitoring",
-          "pod": "monitoring-couchdb-0",
+          "pod": "monitoring-couchdb-",
           "volume": "data"
         },
         {
           "namespace": "management-monitoring",
-          "pod": "monitoring-cassandra-0",
+          "pod": "monitoring-cassandra-",
           "volume": "data"
         },
         {
           "namespace": "management-monitoring",
-          "pod": "monitoring-ibm-cem-datalayer-0",
+          "pod": "monitoring-ibm-cem-datalayer-",
           "volume": "jobs"
         },
         {
@@ -194,12 +194,12 @@ data:
         },
         {
           "namespace": "management-monitoring",
-          "pod": "monitoring-kafka-0",
+          "pod": "monitoring-kafka-",
           "volume": "data"
         },
         {
           "namespace": "management-monitoring",
-          "pod": "monitoring-zookeeper-0",
+          "pod": "monitoring-zookeeper-",
           "volume": "data"
         }
       ]
@@ -256,7 +256,7 @@ data:
       },
       {
         "resourceType": "pvc",
-        "resourceName": "data-monitoring-cassandra-0",
+        "resourceName": "data-monitoring-cassandra-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -264,7 +264,7 @@ data:
       },
       {
         "resourceType": "pvc",
-        "resourceName": "data-monitoring-couchdb-0",
+        "resourceName": "data-monitoring-couchdb-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -272,7 +272,7 @@ data:
       },
       {
         "resourceType": "pvc",
-        "resourceName": "jobs-monitoring-ibm-cem-datalayer-0",
+        "resourceName": "jobs-monitoring-ibm-cem-datalayer-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -280,7 +280,7 @@ data:
       },
       {
         "resourceType": "pod",
-        "resourceName": "monitoring-cassandra-0",
+        "resourceName": "monitoring-cassandra-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -288,7 +288,7 @@ data:
       },
       {
         "resourceType": "pod",
-        "resourceName": "monitoring-couchdb-0",
+        "resourceName": "monitoring-couchdb-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -296,7 +296,7 @@ data:
       },
       {
         "resourceType": "pod",
-        "resourceName": "monitoring-ibm-cem-datalayer-0",
+        "resourceName": "monitoring-ibm-cem-datalayer-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -336,7 +336,7 @@ data:
       },
       {
         "resourceType": "pvc",
-        "resourceName": "data-monitoring-kafka-0",
+        "resourceName": "data-monitoring-kafka-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -368,7 +368,7 @@ data:
       },
       {
         "resourceType": "pod",
-        "resourceName": "monitoring-kafka-0",
+        "resourceName": "monitoring-kafka-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -376,7 +376,7 @@ data:
       },
       {
         "resourceType": "pod",
-        "resourceName": "monitoring-zookeeper-0",
+        "resourceName": "monitoring-zookeeper-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -392,7 +392,7 @@ data:
       },
       {
         "resourceType": "pvc",
-        "resourceName": "data-monitoring-zookeeper-0",
+        "resourceName": "data-monitoring-zookeeper-",
         "labels": [
             "appbackup=monitoring"
         ],
@@ -415,7 +415,12 @@ data:
         "namespace": "management-monitoring"
       }
     ]
-  mongodb-dump.yaml: "apiVersion: batch/v1\nkind: Job\nmetadata:\n  name: icp-mongodb-backup\n  namespace: ibm-common-services\nspec:\n  template:\n    spec:\n      containers:\n      - name: icp-mongodb-backup\n        image: quay.io/opencloudio/ibm-mongodb@sha256:5004b6073efd2df5eae51431e866123d386495aea1b4baa2dcac9fcbaaf7eb83\n        command: [\"bash\", \"-c\", \"cat /cred/mongo-certs/tls.crt /cred/mongo-certs/tls.key > /dump/mongo.pem; cat /cred/cluster-ca/tls.crt /cred/cluster-ca/tls.key > /dump/ca.pem; mongodump --oplog --out /dump --host mongodb:$MONGODB_SERVICE_PORT --username $ADMIN_USER --password $ADMIN_PASSWORD --authenticationDatabase admin --ssl --sslCAFile /dump/ca.pem --sslPEMKeyFile /dump/mongo.pem\"]\n        volumeMounts:\n          - name: mongodump\n            mountPath: \"/dump\"\n          - name: icp-mongodb-client-cert\n            mountPath: \"/cred/mongo-certs\"\n          - name: cluster-ca-cert\n            mountPath: \"/cred/cluster-ca\"\n        env:\n          - name: MONGODB_SERVICE_PORT\n            value: \"27017\"\n          - name: ADMIN_USER\n            valueFrom:\n              secretKeyRef:\n                name: icp-mongodb-admin\n                key: user\n          - name: ADMIN_PASSWORD\n            valueFrom:\n              secretKeyRef:\n                name: icp-mongodb-admin\n                key: password\n      volumes:\n      - name: mongodump\n        persistentVolumeClaim:\n          claimName: my-mongodump\n      - name: icp-mongodb-client-cert\n        secret:\n          defaultMode: 0400\n          secretName: icp-mongodb-client-cert\n      - name: cluster-ca-cert\n        secret:\n          defaultMode: 400\n          secretName: mongodb-root-ca-cert\n      restartPolicy: Never\n---\n  apiVersion: v1\n  kind: PersistentVolumeClaim\n  metadata:\n    namespace: ibm-common-services\n    name: my-mongodump\n  spec:\n    accessModes:\n      - ReadWriteOnce\n    resources:\n      requests:\n        storage: 20Gi\n    storageClassName: {{ .Values.storageClassName }}\n"    
+  mongodb-dump.yaml: "apiVersion: batch/v1\nkind: Job\nmetadata:\n  name: icp-mongodb-backup\n  namespace: ibm-common-services\nspec:\n  template:\n    spec:\n      containers:\n      - name: icp-mongodb-backup\n        image: {{ .Values.mongoDBDumpImage }}\n        command: [\"bash\", \"-c\", \"cat /cred/mongo-certs/tls.crt /cred/mongo-certs/tls.key > /dump/mongo.pem; cat /cred/cluster-ca/tls.crt /cred/cluster-ca/tls.key > /dump/ca.pem; mongodump --oplog --out /dump --host mongodb:$MONGODB_SERVICE_PORT --username $ADMIN_USER --password $ADMIN_PASSWORD --authenticationDatabase admin --ssl --sslCAFile /dump/ca.pem --sslPEMKeyFile /dump/mongo.pem\"]\n        volumeMounts:\n          - name: mongodump\n            mountPath: \"/dump\"\n          - name: icp-mongodb-client-cert\n            mountPath: \"/cred/mongo-certs\"\n          - name: cluster-ca-cert\n            mountPath: \"/cred/cluster-ca\"\n        env:\n          - name: MONGODB_SERVICE_PORT\n            value: \"27017\"\n          - name: ADMIN_USER\n            valueFrom:\n              secretKeyRef:\n                name: icp-mongodb-admin\n                key: user\n          - name: ADMIN_PASSWORD\n            valueFrom:\n              secretKeyRef:\n                name: icp-mongodb-admin\n                key: password\n      volumes:\n      - name: mongodump\n        persistentVolumeClaim:\n          claimName: my-mongodump\n      - name: icp-mongodb-client-cert\n        secret:\n          defaultMode: 0400\n          secretName: icp-mongodb-client-cert\n      - name: cluster-ca-cert\n        secret:\n          defaultMode: 400\n          secretName: mongodb-root-ca-cert\n      restartPolicy: Never\n---\n  apiVersion: v1\n  kind: PersistentVolumeClaim\n  metadata:\n    namespace: ibm-common-services\n    name: my-mongodump\n  spec:\n    accessModes:\n      - ReadWriteOnce\n    resources:\n      requests:\n        storage: 20Gi\n    storageClassName: {{ .Values.storageClassName }}\n"
+  mongo-image-policy.yaml: "apiVersion: securityenforcement.admission.cloud.ibm.com/v1beta1\nkind: ClusterImagePolicy\nmetadata:\n  name: mongo-image-policy\nspec:\n repositories:\n  - name: \"{{ .Values.mongoDBDumpImage }}\"\n    policy:"
+  enabled-namespaces.json: |-
+    [
+       {{- join "," .Values.enabledNamespaces }}
+    ]    
 kind: ConfigMap
 metadata:
   name: backup-config

@@ -4,5 +4,5 @@ metadata:
   name: nginx-image-policy
 spec:
  repositories:
-  - name: "docker.io/nginx:latest"
+  - name: "quay.io/bitnami/nginx:latest"
     policy:

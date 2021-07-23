@@ -14,12 +14,8 @@ log_file="$CURRENT/restore.log"
 
 echo "============================================="  | tee -a "$log_file"
 
-#Reading bucket info from config file
-accessKeyId=$(cat restore-data.json | jq -r '.bucketInfo.accessKeyId')
-secretAccessKey=$(cat restore-data.json | jq -r '.bucketInfo.secretAccessKey') 
-bucketName=$(cat restore-data.json | jq -r '.bucketInfo.bucketName') 
-bucketUrl=$(cat restore-data.json | jq -r '.bucketInfo.bucketUrl') 
-bucketRegion=$(cat restore-data.json | jq -r '.bucketInfo.bucketRegion')
+# Reading airGap info from config file
+airGap=$(cat restore-data.json | jq -r '.airGap')
 
 #Reading backup name from config file
 backupName=$(cat restore-data.json | jq -r '.backupName')
@@ -209,9 +205,16 @@ csRestore() {
    oc delete pvc mongodbdir-icp-mongodb-0 mongodbdir-icp-mongodb-1 mongodbdir-icp-mongodb-2 -n ibm-common-services
 
    # Creating dummy mongo db pod to delete .velero folder from dump
-   oc apply -f cs/dummy-db.yaml
-   checkPodReadyness "ibm-common-services" "app=dummy-db" "60"
-   oc delete -f cs/dummy-db.yaml
+   echo Air Gap environment is $airGap
+   if [ "$airGap" = "true" ]; then
+      oc apply -f cs/dummy-db-airgap.yaml
+      checkPodReadyness "ibm-common-services" "app=dummy-db" "60"
+      oc delete -f cs/dummy-db-airgap.yaml
+   else
+      oc apply -f cs/dummy-db.yaml
+      checkPodReadyness "ibm-common-services" "app=dummy-db" "60"
+      oc delete -f cs/dummy-db.yaml
+   fi
 }
 
 # This function is to perform va\ma restore
@@ -414,7 +417,6 @@ case "$1" in
     -h|--help)
       echo "options:"
       echo "-h, --help                show brief help"
-      echo "-i, --install-velero      option to install velero server"
       echo "-c, --cs-restore          option to restore IBM Common Services"
       echo "-g, --grc-restore         option to restore GRC"
       echo "-vama, --vama-restore     option to restore IBM Management Mutation Advisor and IBM Management Vulnerability Advisor"
@@ -425,9 +427,6 @@ case "$1" in
       echo "-a, --all-restore         option to restore all components"
       exit 0
       ;;
-    -i | --install-velero) echo "Installing velero" | tee -a "$log_file"
-    installVelero
-    ;;
     -c | --cs-restore) echo "Starting cs restore" | tee -a "$log_file"
     csRestore
     ;;

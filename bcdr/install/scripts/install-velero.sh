@@ -1,4 +1,4 @@
-#!/bin/bash  
+#!/bin/bash
 
 #--------------------------------------------------------------------------
 # Licensed Materials - Property of IBM

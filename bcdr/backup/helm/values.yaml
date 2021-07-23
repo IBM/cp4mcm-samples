@@ -13,10 +13,21 @@
 
 image:
   repository: ""
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
   pullSecret: ""
+  airGap: "false"
 
 schedule: ""
 storageClassName: ""
+ttl: 72h0m0s
+mongoDBDumpImage: quay.io/opencloudio/ibm-mongodb@sha256:5004b6073efd2df5eae51431e866123d386495aea1b4baa2dcac9fcbaaf7eb83
+enabledNamespaces:
+  - '"management-infrastructure-management"'
+  - '"kube-system"'
+  - '"openldap"'
+  - '"ibm-common-services"'
+  - '"management-security-services"'
+  - '"management-monitoring"'
+  - '"bookinfo-project-think"'

@@ -118,18 +118,18 @@ cd /tmp
 
 ### 12. Unzip the `master.zip` file.
 
-### 13. Move the `velero-2.14.7.tgz` to the <Path to cp4mcm-samples-master>/bcdr/velero/scripts directory by running the following command:
+### 13. Move the `velero-2.14.7.tgz` to the <Path to cp4mcm-samples-master>/bcdr/install/scripts directory by running the following command:
 
 ```
-cp velero-2.14.7.tgz <Path to cp4mcm-samples-master>/bcdr/velero/scripts/
+cp velero-2.14.7.tgz <Path to cp4mcm-samples-master>/bcdr/install/scripts/
 ```
 
 You need to designate `<Path of cp4mcm-samples-master>` with the real path where you unzipped the `master.zip` file.
 
-### 14. Go to the directory `<Path of cp4mcm-samples-master>/bcdr/velero/scripts` by running the following command:
+### 14. Go to the directory `<Path of cp4mcm-samples-master>/bcdr/install/scripts` by running the following command:
 
 ```
-cd <Path of cp4mcm-samples-master>/bcdr/velero/scripts
+cd <Path of cp4mcm-samples-master>/bcdr/install/scripts
 ```
 
 You need to designate `<Path of cp4mcm-samples-master>` with the real path where you unzipped the `master.zip` file.

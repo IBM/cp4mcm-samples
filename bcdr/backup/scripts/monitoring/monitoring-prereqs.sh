@@ -10,10 +10,10 @@
 #--------------------------------------------------------------------------
 
 #Getting the replica count before scaling down the required pods
-M_LAYOUT_RC=$(kubectl get deployments monitoring-layout -n management-monitoring -o=jsonpath='{.status.replicas}')
-M_UIAPI_RC=$(kubectl get  deployments monitoring-ui-api -n management-monitoring -o=jsonpath='{.status.replicas}')
-M_TOPOLOGY_RC=$(kubectl get  deployments monitoring-topology -n management-monitoring -o=jsonpath='{.status.replicas}')
-M_ELASTICS_RC=$(kubectl get sts  monitoring-elasticsearch -n management-monitoring -o=jsonpath='{.status.replicas}')
+M_LAYOUT_RC=$(kubectl get deployments monitoring-layout -n management-monitoring -o=jsonpath='{.spec.replicas}')
+M_UIAPI_RC=$(kubectl get  deployments monitoring-ui-api -n management-monitoring -o=jsonpath='{.spec.replicas}')
+M_TOPOLOGY_RC=$(kubectl get  deployments monitoring-topology -n management-monitoring -o=jsonpath='{.spec.replicas}')
+M_ELASTICS_RC=$(kubectl get sts  monitoring-elasticsearch -n management-monitoring -o=jsonpath='{.spec.replicas}')
 
 echo Before scaling down monitoring-layout deployment replica count is $M_LAYOUT_RC
 echo Before scaling down monitoring-ui-api deployment replica count is $M_UIAPI_RC

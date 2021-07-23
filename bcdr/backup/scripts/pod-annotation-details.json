@@ -22,17 +22,17 @@
     },
     {
       "namespace": "management-monitoring",
-      "pod": "monitoring-couchdb-0",
+      "pod": "monitoring-couchdb-",
       "volume": "data"
     },
     {
       "namespace": "management-monitoring",
-      "pod": "monitoring-cassandra-0",
+      "pod": "monitoring-cassandra-",
       "volume": "data"
     },
     {
       "namespace": "management-monitoring",
-      "pod": "monitoring-ibm-cem-datalayer-0",
+      "pod": "monitoring-ibm-cem-datalayer-",
       "volume": "jobs"
     },
     {
@@ -157,12 +157,12 @@
     },
     {
       "namespace": "management-monitoring",
-      "pod": "monitoring-kafka-0",
+      "pod": "monitoring-kafka-",
       "volume": "data"
     },
     {
       "namespace": "management-monitoring",
-      "pod": "monitoring-zookeeper-0",
+      "pod": "monitoring-zookeeper-",
       "volume": "data"
     }
   ]

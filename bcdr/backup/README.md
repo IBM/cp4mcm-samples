@@ -3,7 +3,8 @@
 Follow the steps to back up IBM Cloud Pak® for Multicloud Management.
 
 ## Before you begin
-You need to install the `kubectl`, `oc`, `velero`, `jq`, `git`, `docker` and `Helm` CLIs on a workstation machine, where you can access the OpenShift cluster, initiate and monitor the backup of IBM Cloud Pak® for Multicloud Management.
+- You need to install the `kubectl`, `oc`, `velero`, `jq`, `git`, `docker` and `Helm` CLIs on a workstation machine, where you can access the OpenShift cluster, initiate and monitor the backup of IBM Cloud Pak® for Multicloud Management.
+- If your environment has no access to Internet, you need to upload the `Nginx` image to all the worker nodes by following [Uploading the Nginx image in an air gap environment](../install/UploadNginxImageOnAirgap.md). The `Nginx` container is used to back up MongoDB that is running in the `ibm-common-services` namespace. 
 
 ## Procedure
 
@@ -26,8 +27,8 @@ Where:
 
 ### 3. Install Velero
 
-  - For offline install, you can follow the steps mentioned [here](../velero/InstallVeleroOnAirgap.md)
-  - For online install, you can follow the steps mentioned [here](../velero/VeleroInstallation.md)
+  - For offline install, you can follow the steps mentioned [here](../install/InstallVeleroOnAirgap.md)
+  - For online install, you can follow the steps mentioned [here](../install/VeleroInstallation.md)
 
 ### 4. Build the Docker image
 
@@ -86,12 +87,32 @@ Where:
 
   2. Update the following parameters in `values.yaml`, `values.yaml` is located in `./helm`:
 
-     - repository: Name of the image for example `xy.abc.io/cp4mcm/cp4mcm-bcdr`. Here `xy.abc.io` is the image registry server URL, `cp4mcm` is the name of the repository and `cp4mcm-bcdr` is the name of the Docker image.
-     - pullPolicy: Policy to determine when to pull the image from the image registry server. For example, To force pull the image, use the `Always` policy. 
-     - tag: Tag of the Docker image for example `latest`.
-     - pullSecret: Name of the image pull secret. Refer to the value from step 6.
-     - schedule: Cron expression for automated backup. For example, To take backup once a day, use the `0 0 * * *` Cron expression.
-     - storageClassName: Default storage class on the OpenShift cluster. For example `gp2`.  Use the `oc get sc` command to get the list of available Storage Classes on the OpenShift cluster.
+     - `repository`: Name of the image for example `xy.abc.io/cp4mcm/cp4mcm-bcdr`. Here `xy.abc.io` is the image registry server URL, `cp4mcm` is the name of the repository and `cp4mcm-bcdr` is the name of the Docker image.
+     - `pullPolicy`: Policy to determine when to pull the image from the image registry server. For example, To force pull the image, use the `Always` policy. 
+     - `tag`: Tag of the Docker image for example `latest`.
+     - `pullSecret`: Name of the image pull secret. Refer to the value from step 6.
+     - `schedule`: Cron expression for automated backup. For example, To take backup once a day, use the `0 0 * * *` Cron expression.
+     - `storageClassName`: Default storage class on the OpenShift cluster. For example `gp2`.  Use the `oc get sc` command to get the list of available Storage Classes on the OpenShift cluster.
+     - `ttl`: Time to live for backup. Backup will be deleted automatically after TTL is reached.
+     - `mongoDBDumpImage`: Name of the image for the MongoDB backup job. The MongoDB backup job is responsible for taking the backup of MongoDB that is running in the `ibm-common-services` namespace. Its value should be equal to the image that is used in `icp-mongodb` statefulset for `icp-mongodb` container. Use the command `oc get sts icp-mongodb -o jsonpath='{.spec.template.spec.containers[?(@.name == "icp-mongodb")].image}' -n ibm-common-services` to get the current name of the image. 
+     - `airGap`: Indicates whether the install is online or offline. Set the value to `true` to install offline and `false` to install online.
+     - `enabledNamespaces`: Lists the namespaces that are associated for installed components. For example, the `ibm-common-services` namespace represents the `IBM Common Services` component. You can delete the unused namespaces from the list to reduce the time taken for back up. You can update the list as shown if you have installed only two components, i.e. `IBM Common Services` and `Monitoring`
+     
+       ```
+       enabledNamespaces:
+       - '"management-infrastructure-management"'
+       - '"management-monitoring"'
+       ``` 
+
+       The following table lists the components and namespaces:
+
+       | Components    | Namespaces |
+       | ------------- |-------------|
+       | IBM Common Services      | ibm-common-services |
+       | GRC      | kube-system      |
+       | Monitoring | management-monitoring      |
+       | VA\MA | management-security-services      |
+       | Managed Services & Infrastructure Management | management-infrastructure-management | 
 
   3. Update the `backup-config.yaml`, which is located in `./helm/templates` If you want to take the backup of additional PVs. For example, To take backup of MySQL, add a new JSON entry in the `details` array of element `pod-annotation-details.json` as follows: 
 

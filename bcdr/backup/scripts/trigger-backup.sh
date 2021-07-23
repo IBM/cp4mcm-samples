@@ -9,6 +9,10 @@
 # restricted by GSA ADP Schedule Contract with IBM Corporation.
 #--------------------------------------------------------------------------
 
+source utils.sh
+
+V_FALSE=FALSE
+
 RemoveAnnotationFromPVC() {
   # Defining variables  
   mappings=$(cat config.json)  
@@ -21,7 +25,19 @@ RemoveAnnotationFromPVC() {
     # Computing Namespace & PersistentVolumeClaim
     namespace=$(echo $mappings | jq -r --arg index $index '.[$index | tonumber].namespace')
     persistentVolumeClaims=$(echo $mappings | jq -r --arg index $index '.[$index | tonumber].persistantVolumeClaims' | jq -r .[])
- 
+
+    # Check if namespace is enabled or not
+    isNamespaceEnabled=$(IsNamespaceEnabled $namespace)
+    if [ "$isNamespaceEnabled" = "$V_FALSE" ]; then
+      # Incrementing Index
+      index=$((index+1))
+      
+      echo Namespace [$namespace] is not enabled, hence skipping removing annotation from Persistent Volume Claims $persistentVolumeClaims
+      continue
+    else
+      echo Namespace [$namespace] is enabled, hence proceeding further for removing annotation from Persistent Volume Claims $persistentVolumeClaims    
+    fi
+
     # Logging Index & Namespace 
     echo "Looping over index: $index"
     echo "Namespace: $namespace"
@@ -34,7 +50,6 @@ RemoveAnnotationFromPVC() {
       echo $command
       
       # Execute command
-      
       { 
         # TRY
         $(echo $command)
@@ -45,7 +60,7 @@ RemoveAnnotationFromPVC() {
       }
 
       # Sleep for some time
-      sleep 2s
+      sleep 1s
     done
  
   # Incrementing Index
