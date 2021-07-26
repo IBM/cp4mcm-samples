@@ -36,6 +36,7 @@ rules:
   resources:
   - persistentvolumeclaims
   verbs:
+  - list
   - get
   - patch
   - delete

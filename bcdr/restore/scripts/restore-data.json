@@ -1,16 +1,7 @@
 {
-    "bucketInfo":{
-        "accessKeyId":"",
-        "secretAccessKey":"",
-        "bucketName":"",
-        "bucketUrl":"",
-        "bucketRegion":""
-    },
+    "airGap": "false",
 
-    "backupName":"aws-master-backup-v3-without-pv-label",
-
-    "veleroHelmchart":"https://vmware-tanzu.github.io/helm-charts",
-    "veleroHelmchartVersion":"2.14.7",
+    "backupName":"",
 
     "ingressSubdomain":"",
 
@@ -30,6 +21,8 @@
     "imRestoreLabelValue":"t",
 
     "camRestoreNamePrefix":"cam-restore",
+    "camRestoreLabelKey":"release",
+    "camRestoreLabelValue":"cam",
 
     "sloAndSythenticCrdRestoreNamePrefix":"slo-synthetic-crd-restore",
     "monitoringSecretRestoreNamePrefix":"monitoring-secret-restore",

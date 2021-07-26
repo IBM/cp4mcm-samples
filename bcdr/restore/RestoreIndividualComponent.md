@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - Install the `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm`, `jq`, `git` and `cloudctl` CLIs on the workstation machine, where you can access the OpenShift cluster, initiate and monitor the restoration of IBM Cloud Pak® for Multicloud Management.
+- If your environment has no access to Internet, you need to upload the `Nginx` image to all the worker nodes by following [Uploading the Nginx image in an air gap environment](../install/UploadNginxImageOnAirgap.md). The `Nginx` container is used to back up MongoDB that is running in the `ibm-common-services` namespace.
 
 **Notes**
 - Common Services restore needs to be performed in a fresh cluster.
@@ -29,17 +30,13 @@
 
 3. Install Velero
 
-  - For offline install, you can follow the steps mentioned [here](../velero/InstallVeleroOnAirgap.md)
-  - For online install, you can follow the steps mentioned [here](../velero/VeleroInstallation.md)
+  - For offline install, you can follow the steps mentioned [here](../install/InstallVeleroOnAirgap.md)
+  - For online install, you can follow the steps mentioned [here](../install/VeleroInstallation.md)
 
 4. Change the following values in the file `restore-data.json` based on real values. The file `restore-data.json` is available in the directory `<Path of cp4mcm-samples>/bcdr/restore/scripts`, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
 
    ```
-   "accessKeyId":"<bucket access key id>",
-   "secretAccessKey":"<bucket secret access key>",
-   "bucketName":"<bucket name>",
-   "bucketUrl":"<bucket url>",
-   "bucketRegion":"<bucket region>",
+   "airGap": "<Indicates whether the install is online or offline. Set the value to true to install offline and false to install online>",
        
    "backupName":"<backup name>",
         
@@ -57,6 +54,7 @@
    For Example:
 
     ```
+    "airGap":"false",
     "backupName":"cp4mcm-backup-373383393",
 
     "ingressSubdomain":"apps.cp4mcm-restore.multicloud-apps.io",
@@ -93,31 +91,36 @@
 2. Install Common Services and IBM Cloud Pak for Multicloud Management
 
     1. Install RHCAM and enable the `observability` feature.
-    2. Install IBM Cloud Pak for Multicloud Management operator and create its CR.
-    3. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
+    2. Install Common Services operator.
+    3. Install IBM Cloud Pak for Multicloud Management operator and create its CR.
+    4. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
 
 3. Restore IBM Common Services database.
 
     Run `mongo-restore-dbdump` job for common services database to restore. The `mongo-restore-dbdump.yaml` file is available in `<Path of cp4mcm-samples>/bcdr/restore/scripts/cs` folder, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
 
-        ```
-        oc apply -f mongo-restore-dbdump.yaml
-        ```
+    ```
+    oc apply -f mongo-restore-dbdump.yaml
+    ```
     
     Wait untill the `mongo-restore-dbdump` job is in `Completed` status. You can run the following command to check the `mongo-restore-dbdump` job status.
 
-        ```
-        oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
-        ``` 
+    ```
+    oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
+    ``` 
 
 ### Restore Monitoring
-1. Uninstall Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
+1. Uninstall Monitoring operator (`ibm-management-monitoring`) by running following command:
+
+   ```
+   oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/1/enabled", "value": false }]'
+   ```
 
 2. Delete the secrets and configmaps which were left after uninstall by running the following commands:
 
     ```
-    oc delete secret all -n management-monitoring
-    oc delete cm all -n management-monitoring
+    oc delete secret --all -n management-monitoring
+    oc delete cm --all -n management-monitoring
     ```
 
 3. Start the restoration process by running either of the following commands:
@@ -137,11 +140,19 @@
     oc delete secret platform-auth-idp-credentials monitoring-oidc-client -n management-monitoring
     ```
 
-5. Install Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
+5. Install Monitoring operator (`ibm-management-monitoring`) by running following command:
+
+   ```
+   oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/1/enabled", "value": true }]'
+   ```
 
 
 ### Restore Managed Services
-1. Uninstall Managed Services operator (`ibm-management-cam-install`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
+1. Uninstall Managed Services operator (`ibm-management-cam-install`) by running following command:
+
+   ```
+   oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/0/config/3/enabled", "value": false }]'
+   ```
 
 2. Start the restoration process by running either of the following commands:
 
@@ -154,4 +165,9 @@
     bash restore.sh --mservices-restore
     ```
 
-3. Install Managed Services operator (`ibm-management-cam-install`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
+3. Install Managed Services operator (`ibm-management-cam-install`) by running following command:
+
+   ```
+   oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/0/config/3/enabled", "value": true }]'
+   ```
+

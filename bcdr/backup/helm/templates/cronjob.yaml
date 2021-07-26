@@ -38,12 +38,21 @@ spec:
                 name: backup-config
             - name: mongodb-dump-config
               configMap:
-                name: backup-config    
+                name: backup-config
+            - name: mongodb-image-policy-config
+              configMap:
+                name: backup-config
+            - name: enabled-namespaces
+              configMap:
+                name: backup-config            
             - name: workdir
               emptyDir: {}                 
           containers:
           - image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
             imagePullPolicy: {{ .Values.image.pullPolicy }}
+            env:
+            - name: AIR_GAP
+              value: "{{ .Values.image.airGap }}"  
             name: backup-job
             resources: {}
             volumeMounts:
@@ -61,7 +70,13 @@ spec:
                 subPath: resource-label-details.json
               - name: mongodb-dump-config
                 mountPath: /scripts/cs/mongodb-dump.yaml
-                subPath: mongodb-dump.yaml  
+                subPath: mongodb-dump.yaml
+              - name: mongodb-image-policy-config
+                mountPath: /scripts/cs/mongo-image-policy.yaml
+                subPath: mongo-image-policy.yaml
+              - name: enabled-namespaces
+                mountPath: /scripts/enabled-namespaces.json
+                subPath: enabled-namespaces.json      
               - mountPath: /workdir
                 name: workdir       
           restartPolicy: OnFailure

@@ -8,8 +8,11 @@ metadata:
 spec:
   containers:
     - image: quay.io/bitnami/nginx:latest
+      imagePullPolicy: Never
       #command: ["rm -rf /dump/.velero"]
       name: nginx
+      securityContext:
+        runAsUser: 0
       volumeMounts:
         - name: mongodump
           mountPath: "/dump"
@@ -21,5 +24,3 @@ spec:
     - name: mongodump
       persistentVolumeClaim:
         claimName: my-mongodump
-
-#oc create secret docker-registry repositorysecretkey --docker-username=amitabhprasad --docker-password=a1319172 --docker-server=docker.io

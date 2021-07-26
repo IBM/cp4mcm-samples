@@ -8,10 +8,10 @@ Follow the steps to install Velero in an OpenShift cluster having internet conne
 
 ## Procedure
 
-1. Go to the directory `<Path of cp4mcm-samples>/bcdr/velero/scripts` by running the following command:
+1. Go to the directory `<Path of cp4mcm-samples>/bcdr/install/scripts` by running the following command:
 
      ```
-     cd <Path of cp4mcm-samples>/bcdr/velero/scripts
+     cd <Path of cp4mcm-samples>/bcdr/install/scripts
      ```
 
      You need to designate `<Path of cp4mcm-samples>` with the real path where you put the `cp4mcm-samples` GitHub repository.
