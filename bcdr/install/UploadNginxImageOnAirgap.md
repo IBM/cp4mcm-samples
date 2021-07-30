@@ -51,7 +51,7 @@ cd /tmp
      docker load -i nginx.tar
      ```
 
-     If `podman` is installed instead of `docker`, then you need to run the following command to import the Velero images:
+     If `podman` is installed instead of `docker`, then you need to run the following command to import the Nginx image:
 
      ```
      podman load -i nginx.tar
