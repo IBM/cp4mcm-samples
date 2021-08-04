@@ -8,10 +8,7 @@ metadata:
 spec:
   containers:
     - image: quay.io/bitnami/nginx:latest
-      #command: ["rm -rf /dump/.velero"]
       name: nginx
-      securityContext:
-        runAsUser: 0
       volumeMounts:
         - name: mongodump
           mountPath: "/dump"
