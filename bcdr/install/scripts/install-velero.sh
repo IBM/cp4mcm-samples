@@ -11,25 +11,41 @@
 
 #Reading S3 Bucket configuration details
 ACCESS_KEY_ID=$(cat install-velero-config.json | jq -r '.access_key_id')
-SECRET_ACCESS_KEY=$(cat install-velero-config.json | jq -r '.secret_access_key') 
-BUCKET_NAME=$(cat install-velero-config.json | jq -r '.bucket_name') 
-BUCKET_URL=$(cat install-velero-config.json | jq -r '.bucket_url') 
+SECRET_ACCESS_KEY=$(cat install-velero-config.json | jq -r '.secret_access_key')
+BUCKET_NAME=$(cat install-velero-config.json | jq -r '.bucket_name')
+BUCKET_URL=$(cat install-velero-config.json | jq -r '.bucket_url')
 BUCKET_REGION=$(cat install-velero-config.json | jq -r '.bucket_region')
 VELERO_HELM_CHART_URL=$(cat install-velero-config.json | jq -r '.velero_helm_chart_url')
 VELERO_HELM_CHART_VERSION=$(cat install-velero-config.json | jq -r '.velero_helm_chart_version')
+
+# Checks Helm is installed or not
+isHelmInstalled() {
+   command="helm version --short"
+
+   # Execute command
+   {
+      # TRY
+      printf "Helm version: "
+      $(echo $command)
+   } || {
+      # CATCH
+      echo "Helm is not installed. Install Helm and try again."
+      exit 1
+   }
+}
 
 # Waits for a specific time, Requires one positional argument "timeout"
 wait(){
    timeout=$1
    i=0
    while [ $i -ne $timeout ]; do
-     printf "."
-     sleep 1
-     i=$((i+1))
+      printf "."
+      sleep 1
+      i=$((i+1))
    done
 }
 
-# Checks pod readyness using pod label, Requires 3 positional arguments "namespace", "podLabel" and "retryCount" 
+# Checks pod readyness using pod label, Requires 3 positional arguments "namespace", "podLabel" and "retryCount"
 checkPodReadyness(){
    namespace=$1
    podLabel=$2
@@ -38,14 +54,14 @@ checkPodReadyness(){
    pods=$(oc -n $namespace get pods -l $podLabel --no-headers | grep -F "1/1" -v)
 
    while [ "${pods}" ]; do
-     wait "10"
-     echo "Waiting for Pods to be READY"
-     pods=$(oc -n $namespace get pods -l $podLabel --no-headers | grep -F "1/1" -v)
-     counter=$((counter+1))
-     if [ $counter -eq $retryCount ]; then
-        echo "Pods in $namespace namespace are not READY hence terminating the restore process"
-        exit 1
-     fi
+      wait "10"
+      echo "Waiting for Pods to be READY"
+      pods=$(oc -n $namespace get pods -l $podLabel --no-headers | grep -F "1/1" -v)
+      counter=$((counter+1))
+      if [ $counter -eq $retryCount ]; then
+         echo "Pods in $namespace namespace are not READY hence terminating the restore process"
+         exit 1
+      fi
    done
 }
 
@@ -67,31 +83,35 @@ installVelero() {
 
    # Installing velero
    helm install velero --namespace velero --version $VELERO_HELM_CHART_VERSION \
-   --set configuration.provider=aws \
-   --set-file credentials.secretContents.cloud=./bucket-creds \
-   --set use-volume-snapshots=false \
-   --set deployRestic=true \
-   --set restic.privileged=true \
-   --set backupsEnabled=true \
-   --set snapshotsEnabled=false \
-   --set configuration.backupStorageLocation.name=default \
-   --set configuration.backupStorageLocation.bucket=$BUCKET_NAME \
-   --set configuration.backupStorageLocation.config.region=$BUCKET_REGION \
-   --set configuration.backupStorageLocation.config.s3ForcePathStyle=true \
-   --set configuration.backupStorageLocation.config.s3Url=$BUCKET_URL \
-   --set image.repository=velero/velero \
-   --set image.pullPolicy=IfNotPresent \
-   --set initContainers[0].name=velero-plugin-for-aws \
-   --set initContainers[0].image=velero/velero-plugin-for-aws:v1.0.0 \
-   --set initContainers[0].volumeMounts[0].mountPath=/target \
-   --set initContainers[0].volumeMounts[0].name=plugins \
-   vmware-tanzu/velero
+      --set configuration.provider=aws \
+      --set-file credentials.secretContents.cloud=./bucket-creds \
+      --set use-volume-snapshots=false \
+      --set deployRestic=true \
+      --set restic.privileged=true \
+      --set backupsEnabled=true \
+      --set snapshotsEnabled=false \
+      --set configuration.backupStorageLocation.name=default \
+      --set configuration.backupStorageLocation.bucket=$BUCKET_NAME \
+      --set configuration.backupStorageLocation.config.region=$BUCKET_REGION \
+      --set configuration.backupStorageLocation.config.s3ForcePathStyle=true \
+      --set configuration.backupStorageLocation.config.s3Url=$BUCKET_URL \
+      --set image.repository=velero/velero \
+      --set image.pullPolicy=IfNotPresent \
+      --set initContainers[0].name=velero-plugin-for-aws \
+      --set initContainers[0].image=velero/velero-plugin-for-aws:v1.0.0 \
+      --set initContainers[0].volumeMounts[0].mountPath=/target \
+      --set initContainers[0].volumeMounts[0].name=plugins \
+      vmware-tanzu/velero
 
    rm -f bucket-creds
 
-   checkPodReadyness "velero" "app.kubernetes.io/name=velero" "30"
+   checkPodReadyness "velero" "app.kubernetes.io/name=velero" "120"
 
    echo "Velero installed successfully."
 }
 
+# Check whether Helm is installed or not
+isHelmInstalled
+
+# Install Velero
 installVelero
