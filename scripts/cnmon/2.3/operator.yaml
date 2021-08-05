@@ -29,13 +29,13 @@ spec:
         productChargedContainers: "All"
         productCloudpakRatio: "1:1"
         olm.relatedImage.autconfigoperator: cp.icr.io/cp/cp4mcm/ibm-dc-autoconfig-operator@sha256:d0b291bf07751a3bc80284c6c59d103a82b2edc4d781cecc18b0d946846f9a48
-        olm.relatedImage.k8monitor: cp.icr.io/cp/cp4mcm/k8-monitor@sha256:90fdd577c3b37065470bb844e3548cffa28f5e36deebfe31e25b4b34f4ff2005
-        olm.relatedImage.k8operator: cp.icr.io/cp/cp4mcm/k8sdc-operator@sha256:73af61044c326367005d4cb4be236dd87db25920b0995158f83f1cb1d4ae284e
+        olm.relatedImage.k8monitor: cp.icr.io/cp/cp4mcm/k8-monitor@sha256:dcfd98dbeb242f29656d5209d82478886dc4ed07f887ab7cfe333c21c2075e4e
+        olm.relatedImage.k8operator: cp.icr.io/cp/cp4mcm/k8sdc-operator@sha256:01a703a4d13d452867a971f33638b37df8fb34c67759244ed8e9c9ba7bcbc1b1
         olm.relatedImage.reloader: cp.icr.io/cp/cp4mcm/reloader@sha256:4db59ec2851d601a5de6b95f444c700cd4a10417fe9d15d9be7d0fafa91c5baa
-        olm.relatedImage.uacloud: cp.icr.io/cp/cp4mcm/ua-cloud-monitoring@sha256:d1572fd79ecf1a90a2743b69799b2e357bee7fab14f8ce6470858b2d60e6aed0
-        olm.relatedImage.uaoperator: cp.icr.io/cp/cp4mcm/ua-operator@sha256:7bbf0624274ec296d7a98822feda71ba235c17136718e1dc4a5907f515cb8504
-        olm.relatedImage.uaplugins: cp.icr.io/cp/cp4mcm/ua-plugins@sha256:4930eedb86c52135516780a6265b672e79d17d07ea7c4ff9df20b10739128716
-        olm.relatedImage.uarepo: cp.icr.io/cp/cp4mcm/ua-repo@sha256:e96f4f88e70639c7b207676bc11b3fc40c4d61e869e4bed41d066cc1c96b40b5
+        olm.relatedImage.uacloud: cp.icr.io/cp/cp4mcm/ua-cloud-monitoring@sha256:edd6d8423509b8700d4d9511b03228f682428046618d2c87d275581117b66bbe
+        olm.relatedImage.uaoperator: cp.icr.io/cp/cp4mcm/ua-operator@sha256:b0981e9fda02041b87fbb0e34c74917f59f8cb286d35371e0289b9a96a1c0a28
+        olm.relatedImage.uaplugins: cp.icr.io/cp/cp4mcm/ua-plugins@sha256:9e6d0f9aad513548abd7691576b0eae3f43579c68cc1c98bed80befe985c8ee5
+        olm.relatedImage.uarepo: cp.icr.io/cp/cp4mcm/ua-repo@sha256:6ec8ed8cb421fa5879ded166ac562eee743f5648049c6faaa0cd2547a599668b
     spec:
       serviceAccountName: ibm-monitoring-dataprovider-mgmt-operator
       hostNetwork: false
