@@ -16,6 +16,22 @@ BUCKET_NAME=$(cat install-velero-on-airgap-config.json | jq -r '.bucket_name')
 BUCKET_URL=$(cat install-velero-on-airgap-config.json | jq -r '.bucket_url') 
 BUCKET_REGION=$(cat install-velero-on-airgap-config.json | jq -r '.bucket_region')
 
+# Checks Helm is installed or not
+isHelmInstalled() {
+   command="helm version --short"
+
+   # Execute command
+   {
+      # TRY
+      printf "Helm version: "
+      $(echo $command)
+   } || {
+      # CATCH
+      echo "Helm is not installed. Install Helm and try again."
+      exit 1
+   }
+}
+
 # Waits for a specific time, Requires one positional argument "timeout"
 wait(){
    timeout=$1
@@ -84,7 +100,7 @@ installVelero() {
    --set configMaps.restic-restore-action-config.data.image=localhost/velero/velero-restic-restore-helper:v1.5.3 \
    velero-2.14.7.tgz
 
-   checkPodReadyness "velero" "app.kubernetes.io/name=velero" "30"
+   checkPodReadyness "velero" "app.kubernetes.io/name=velero" "120"
 
    echo "Velero installed successfully."
    
@@ -96,4 +112,8 @@ installVelero() {
    oc label cm velero-restic-restore-action-config -n velero velero.io/restic=RestoreItemAction
 }
 
+# Check whether Helm is installed or not
+isHelmInstalled
+
+# Install Velero
 installVelero

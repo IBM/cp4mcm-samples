@@ -378,3 +378,43 @@ As a fix perform the following steps:
       ```
       helm install backup-job clusterbackup-0.1.0.tgz
       ```
+
+### 3. Command `sh install-velero.sh` failed with the following error:
+
+```
+-bash: ./install-velero.sh: Permission denied
+```
+
+Complete the following steps to fix the problem:
+
+   1. Give executable permission to the file `install-velero.sh` by running the following command:
+
+      ```
+      chmod 755 install-velero.sh
+      ```
+
+   2. Install Velero by running the following command:
+
+      ```
+      sh install-velero.sh
+      ```
+
+### 4. Command `sh install-velero-on-airgap.sh` failed with the following error:
+
+```
+-bash: ./install-velero-on-airgap.sh: Permission denied
+```
+
+Complete the following steps to fix the problem:
+
+   1. Give executable permission to the file `install-velero-on-airgap.sh` by running the following command:
+
+      ```
+      chmod 755 install-velero-on-airgap.sh
+      ```
+
+   2. Install Velero by running the following command:
+
+      ```
+      sh install-velero-on-airgap.sh
+      ```
