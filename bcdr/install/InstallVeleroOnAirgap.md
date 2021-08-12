@@ -156,7 +156,13 @@ Where:
 ### 17. Install Velero by running the following command:
 
 ```
-sh install-velero-on-airgap.sh
+nohup sh install-velero-on-airgap.sh > install-velero-on-airgap.log &
+```
+
+Check the logs by running the following command:
+
+```
+tail -f install-velero-on-airgap.log
 ```
 
 ### 18. Check the velero pods status by running the following command:

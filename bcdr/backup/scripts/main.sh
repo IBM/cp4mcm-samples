@@ -18,15 +18,6 @@ IS_COMMON_SERVICES_NAMESPACE_ENABLED=$(IsNamespaceEnabled "ibm-common-services")
 #Adding labels to the required resources
 sh ./add-label-to-resources.sh
 
-# Performing prereqs for monitoring
-if [ "$IS_MONITORING_NAMESPACE_ENABLED" = "$V_FALSE" ]; then
-    echo Namespace [management-monitoring] is not enabled, hence skipping performing prereqs for Monitoring
-
-else
-    echo Namespace [management-monitoring] is enabled, hence proceeding further for performing prereqs for Monitoring
-    sh monitoring/monitoring-prereqs.sh
-fi
-
 # Creating mongo dump for common services
 if [ "$IS_COMMON_SERVICES_NAMESPACE_ENABLED" = "$V_FALSE" ]; then
     echo Namespace [ibm-common-services] is not enabled, hence skipping creating mongo dump for common services
@@ -37,6 +28,18 @@ fi
 
 # Add annotion to pod
 sh ./add-annotation-to-pod.sh
+
+# Remove annotation from PVC
+sh ./remove-annotation-from-pvc.sh
+
+# Pre backup task for monitoring
+if [ "$IS_MONITORING_NAMESPACE_ENABLED" = "$V_FALSE" ]; then
+    echo Namespace [management-monitoring] is not enabled, hence skipping performing prereqs for Monitoring
+
+else
+    echo Namespace [management-monitoring] is enabled, hence proceeding further for performing prereqs for Monitoring
+    sh monitoring/monitoring-prereqs.sh
+fi
 
 # Trigger backup
 sh ./trigger-backup.sh

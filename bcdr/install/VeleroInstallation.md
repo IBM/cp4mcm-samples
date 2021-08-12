@@ -27,7 +27,13 @@ Follow the steps to install Velero in an OpenShift cluster having internet conne
 3. Install Velero using the following command:
 
      ```
-     sh install-velero.sh
+     nohup sh install-velero.sh > install-velero.log &
+     ```
+
+     Check the logs by running the following command:
+
+     ```
+     tail -f install-velero.log
      ```
 
 4. Check the velero pods status by running the following command:

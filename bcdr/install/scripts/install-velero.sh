@@ -59,7 +59,8 @@ checkPodReadyness(){
       pods=$(oc -n $namespace get pods -l $podLabel --no-headers | grep -F "1/1" -v)
       counter=$((counter+1))
       if [ $counter -eq $retryCount ]; then
-         echo "Pods in $namespace namespace are not READY hence terminating the restore process"
+         echo "Pods in $namespace namespace are not in READY state. So terminating the readiness check."
+         echo "Velero installation failed"
          exit 1
       fi
    done
