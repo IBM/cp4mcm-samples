@@ -1,0 +1,28 @@
+#--------------------------------------------------------------------------
+# Licensed Materials - Property of IBM
+#
+# (C) Copyright IBM Corporation 2019.
+#
+# US Government Users Restricted Rights - Use, duplication or disclosure
+# restricted by GSA ADP Schedule Contract with IBM Corporation.
+#--------------------------------------------------------------------------
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-metadata
+  namespace: backup
+data:
+  image.repository: {{ .Values.image.repository | quote }}
+  image.pullPolicy: {{ .Values.image.pullPolicy | quote }}
+  image.tag: {{ .Values.image.tag | quote }}
+  image.airGap: {{ .Values.image.airGap | quote }}
+  image.pullSecret: {{ .Values.image.pullSecret | quote }}
+  schedule: {{ .Values.schedule | quote }}
+  storageClassName: {{ .Values.storageClassName | quote }}
+  ttl: {{ .Values.ttl | quote }}
+  mongoDBDumpImage: {{ .Values.mongoDBDumpImage | quote }}
+  enabledNamespaces: |- 
+    {{- range .Values.enabledNamespaces }}
+    - {{ . }}
+    {{- end }} 

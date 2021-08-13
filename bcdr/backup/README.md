@@ -294,7 +294,7 @@ Where:
 
 ## Troubleshooting
 
-### 1. Command `sh install-velero.sh` failed with the following error:
+### 1. Velero installation in an online environment failed with the following error:
 
 ```
 Error: admission webhook "trust.hooks.securityenforcement.admission.cloud.ibm.com" denied the request:
@@ -331,8 +331,14 @@ As a fix perform the following steps:
    4. Install Velero by running the following command:
 
       ```
-      sh install-velero.sh
+      nohup sh install-velero.sh > install-velero.log &
       ```
+
+   5. Check the logs by running the following command:
+
+      ```
+      tail -f install-velero.log
+      ```   
 
 ### 2. Command `helm install backup-job clusterbackup-0.1.0.tgz` failed with the following error:
 
@@ -396,8 +402,14 @@ Complete the following steps to fix the problem:
    2. Install Velero by running the following command:
 
       ```
-      sh install-velero.sh
+      nohup ./install-velero.sh > install-velero.log &
       ```
+
+   3. Check the logs by running the following command:
+
+      ```
+      tail -f install-velero.log
+      ```   
 
 ### 4. Command `sh install-velero-on-airgap.sh` failed with the following error:
 
@@ -416,5 +428,11 @@ Complete the following steps to fix the problem:
    2. Install Velero by running the following command:
 
       ```
-      sh install-velero-on-airgap.sh
+      nohup ./install-velero-on-airgap.sh > install-velero-on-airgap.log &
       ```
+
+   3. Check the logs by running the following command:
+
+      ```
+      tail -f install-velero-on-airgap.log
+      ```   
