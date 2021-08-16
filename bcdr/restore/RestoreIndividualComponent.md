@@ -4,9 +4,11 @@
 
 - Install the `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm`, `jq`, `git` and `cloudctl` CLIs on the workstation machine, where you can access the OpenShift cluster, initiate and monitor the restoration of IBM Cloud Pak® for Multicloud Management.
 - If your environment has no access to Internet, you need to upload the `Nginx` image to all the worker nodes by following [Uploading the Nginx image in an air gap environment](../install/UploadNginxImageOnAirgap.md). The `Nginx` container is used to restore MongoDB that is running in the `ibm-common-services` namespace.
+- All required storage classes must be created prior to the restore and storage classes must have the same name as the backup cluster.
 
 **Notes**
 - Common Services restore needs to be performed in a fresh cluster.
+- It is highly recommended that the version of Common Services, Red Hat Advanced Cluster Management, and IBM Cloud Pak for Multicloud Management in restored cluster should be the same as the backup cluster.
 - Monitoring or Managed Services restore needs to be performed when Common Services and IBM Cloud Pak for Multicloud Management operators are running.
 
 ## Procedure
@@ -80,34 +82,40 @@
     2. Start the restoration process by running either of the following commands:
 
        ```
-       bash restore.sh -c
+       nohup bash restore.sh -c > cs-restore.log &
        ```
        or 
 
        ```
-       bash restore.sh --cs-restore
+       nohup bash restore.sh --cs-restore > cs-restore.log &
        ```
 
 2. Install Common Services and IBM Cloud Pak for Multicloud Management
 
-    1. Install RHCAM and enable the `observability` feature.
+    1. Install RHACM and enable the `observability` feature.
     2. Install Common Services operator.
     3. Install IBM Cloud Pak for Multicloud Management operator and create its CR.
     4. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
 
 3. Restore IBM Common Services database.
 
-    Run `mongo-restore-dbdump` job for common services database to restore. The `mongo-restore-dbdump.yaml` file is available in `<Path of cp4mcm-samples>/bcdr/restore/scripts/cs` folder, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
+    1. Change the image value in `mongo-restore-dbdump.yaml` file. The file is available in `<Path of cp4mcm-samples>/bcdr/restore/scripts/cs` folder, where `<Path of cp4mcm-samples>` is the real path where `cp4mcm-samples` GitHub repository is cloned. This image value should be equal to the `mongoDBDumpImage` helm variable value which is used for taking backup. Get the image value by running the following command.
 
-    ```
-    oc apply -f mongo-restore-dbdump.yaml
-    ```
+       ```
+       kubectl get configmap backup-metadata -n backup -o jsonpath='{.data.mongoDBDumpImage}'
+       ```
+
+    2. Run `mongo-restore-dbdump` job for common services database to restore.
+
+       ```
+       oc apply -f mongo-restore-dbdump.yaml
+       ```
     
-    Wait untill the `mongo-restore-dbdump` job is in `Completed` status. You can run the following command to check the `mongo-restore-dbdump` job status.
+       Wait untill the `mongo-restore-dbdump` job is in `Completed` status. You can run the following command to check the `mongo-restore-dbdump` job status.
 
-    ```
-    oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
-    ``` 
+       ```
+       oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
+       ``` 
 
 ### Restore Monitoring
 1. Uninstall Monitoring operator (`ibm-management-monitoring`) by running following command:
@@ -126,12 +134,12 @@
 3. Start the restoration process by running either of the following commands:
 
     ```
-    bash restore.sh -monitoring
+    nohup bash restore.sh -monitoring > monitoring-restore.log &
     ```
     or 
   
     ```
-    bash restore.sh --monitoring-restore
+    nohup bash restore.sh --monitoring-restore > monitoring-restore.log &
     ```
 
 4. Delete `platform-auth-idp-credentials` and `monitoring-oidc-client` secrets by running the following command:
@@ -157,12 +165,12 @@
 2. Start the restoration process by running either of the following commands:
 
     ```
-    bash restore.sh -mservices
+    nohup bash restore.sh -mservices > managedservices-restore.log &
     ```
     or 
   
     ```
-    bash restore.sh --mservices-restore
+    nohup bash restore.sh --mservices-restore > managedservices-restore.log &
     ```
 
 3. Install Managed Services operator (`ibm-management-cam-install`) by running following command:
