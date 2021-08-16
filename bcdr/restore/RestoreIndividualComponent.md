@@ -93,9 +93,10 @@
 2. Install Common Services and IBM Cloud Pak for Multicloud Management
 
     1. Install RHACM and enable the `observability` feature.
-    2. Install Common Services operator.
-    3. Install IBM Cloud Pak for Multicloud Management operator and create its CR.
-    4. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
+    2. Create the installer catalog sources. For more information visit [here](https://www-03preprod.ibm.com/support/knowledgecenter/SSFC4F_2.3.0/install/prep_online.html#create_source).
+    3. Install Common Services operator.
+    4. Install IBM Cloud Pak for Multicloud Management operator and create its CR.
+    5. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
 
 3. Restore IBM Common Services database.
 
