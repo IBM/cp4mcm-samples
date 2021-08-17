@@ -4,6 +4,7 @@
 
 - Install the `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm`, `jq`, `git` and `cloudctl` CLIs on the workstation machine, where you can access the OpenShift cluster, initiate and monitor the restoration of IBM Cloud Pak® for Multicloud Management.
 - If your environment has no access to Internet, you need to upload the `Nginx` image to all the worker nodes by following [Uploading the Nginx image in an air gap environment](../install/UploadNginxImageOnAirgap.md). The `Nginx` container is used to restore MongoDB that is running in the `ibm-common-services` namespace.
+- All required storage classes must be created prior to the restore and storage classes must have the same name as the backup cluster.
 
 **Notes**
 
@@ -13,6 +14,7 @@
 - The following steps in the Procedure section are to restore IBM Cloud Pak for Multicloud Management in a new cluster.
 - The backup also backs up keys and certificates from the previous clusters. Ensure that the restored data is accessible in the new deployment. This restoration procedure works with the backup procedure in Backing up IBM Cloud Pak for Multicloud Management. Without backup, you can't run the restoration independently.
 - It is important to restore the backed-up data first for different components like Common Services, Monitoring, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and Managed Services, and then deploy Common Services and IBM Cloud Pak for Multicloud Management operators. Otherwise, the restoration might not work.
+- It is highly recommended that the version of Common Services, Red Hat Advanced Cluster Management, and IBM Cloud Pak for Multicloud Management in restored cluster should be the same as the backup cluster.
 
 
 ## Procedure
@@ -87,19 +89,20 @@ Where:
     2. Start the restoration process by running either of the following commands:
 
        ```
-       bash restore.sh -a 
+       nohup bash restore.sh -a > restore.log & 
        ```
        or 
 
        ```
-       bash restore.sh --all-restore
+       nohup bash restore.sh --all-restore > restore.log &
        ```
 
 ### 5. Install Common Services and IBM Cloud Pak for Multicloud Management
 
-  1. Install RHCAM and enable the `observability` feature.
-  2. Install Common Services operator.
-  3. Install IBM Cloud Pak for Multicloud Management operator and create its CR by enabling different components. For example, enable Infrastructure Management, Managed Services, Service Library, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and don't enable Monitoring. For Managed Services, specify the existing claim name details as follows:
+  1. Install RHACM and enable the `observability` feature.
+  2. Create the installer catalog sources. For more information visit [here](https://www-03preprod.ibm.com/support/knowledgecenter/SSFC4F_2.3.0/install/prep_online.html#create_source).
+  3. Install Common Services operator.
+  4. Install IBM Cloud Pak for Multicloud Management operator and create its CR by enabling different components. For example, enable Infrastructure Management, Managed Services, Service Library, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and don't enable Monitoring. For Managed Services, specify the existing claim name details as follows:
 
       ```
         - enabled: true
@@ -138,11 +141,17 @@ Where:
                   useDynamicProvisioning: true
       ```
 
-   4. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
+   5. Wait until the IBM Cloud Pak for Multicloud Management installation is complete and all pods of `ibm-common-services` namespace are running.
 
 ### 6. Restore IBM Common Services database
 
-1. Run `mongo-restore-dbdump` job for common services database to restore. The `mongo-restore-dbdump.yaml` file is available in `<Path of cp4mcm-samples>/bcdr/restore/scripts/cs` folder, where `<Path of cp4mcm-samples>` is the real path where you put the `cp4mcm-samples` GitHub repository.
+1. Change the image value in `mongo-restore-dbdump.yaml` file. The file is available in `<Path of cp4mcm-samples>/bcdr/restore/scripts/cs` folder, where `<Path of cp4mcm-samples>` is the real path where `cp4mcm-samples` GitHub repository is cloned. This image value should be equal to the `mongoDBDumpImage` helm variable value which is used for taking backup. Get the image value by running the following command.
+
+   ```
+   kubectl get configmap backup-metadata -n backup -o jsonpath='{.data.mongoDBDumpImage}'
+   ```
+
+2. Run `mongo-restore-dbdump` job for common services database to restore.
 
    ```
    oc apply -f mongo-restore-dbdump.yaml
@@ -165,15 +174,15 @@ Where:
 2. Restore Infrastructure Management by running either of the following commands:
 
    ```
-   bash restore.sh -im
+   nohup bash restore.sh -im > im-restore.log &
    
    or 
    
-   bash restore.sh --im-restore
+   nohup bash restore.sh --im-restore > im-restore.log &
    ```
 
 ### 8. Restore Managed Clusters and applications
-This step needs to be done after RHCAM and IBM Cloud Pak for Multicloud Management installation.
+This step needs to be done after RHACM and IBM Cloud Pak for Multicloud Management installation.
 
 1. To break the connection between managed and the old Hub Cluster that you backed up, delete the klusterlet from managed clusters by running the following shell script in the managed cluster:
  
