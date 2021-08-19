@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Install the `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm`, `jq`, `git` and `cloudctl` CLIs on the workstation machine, where you can access the OpenShift cluster, initiate and monitor the restoration of IBM Cloud Pak® for Multicloud Management.
-- If your environment has no access to Internet, you need to upload the `Nginx` image to all the worker nodes by following [Uploading the Nginx image in an air gap environment](../install/UploadNginxImageOnAirgap.md). The `Nginx` container is used to restore MongoDB that is running in the `ibm-common-services` namespace.
+- If your environment has no access to Internet, you need to upload the `Ubuntu` image to all the worker nodes by following [Uploading the Ubuntu image in an air gap environment](../install/UploadUbuntuImageOnAirgap.md). The `Ubuntu` container is used to restore MongoDB that is running in the `ibm-common-services` namespace.
 - All required storage classes must be created prior to the restore and storage classes must have the same name as the backup cluster.
 
 **Notes**
@@ -112,14 +112,14 @@
        oc apply -f mongo-restore-dbdump.yaml
        ```
     
-       Wait untill the `mongo-restore-dbdump` job is in `Completed` status. You can run the following command to check the `mongo-restore-dbdump` job status.
+       Wait until the `mongo-restore-dbdump` job is in `Completed` status. You can run the following command to check the `mongo-restore-dbdump` job status.
 
        ```
        oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
        ``` 
 
 ### Restore Monitoring
-1. Uninstall Monitoring operator (`ibm-management-monitoring`) by running following command:
+1. Uninstall Monitoring operator (`ibm-management-monitoring`) by running the following command:
 
    ```
    oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/1/enabled", "value": false }]'
@@ -149,7 +149,7 @@
     oc delete secret platform-auth-idp-credentials monitoring-oidc-client -n management-monitoring
     ```
 
-5. Install Monitoring operator (`ibm-management-monitoring`) by running following command:
+5. Install Monitoring operator (`ibm-management-monitoring`) by running the following command:
 
    ```
    oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/1/enabled", "value": true }]'
@@ -179,4 +179,3 @@
    ```
    oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/0/config/3/enabled", "value": true }]'
    ```
-
