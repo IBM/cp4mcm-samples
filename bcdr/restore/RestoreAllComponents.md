@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Install the `watch`, `kubectl`, `oc`, `python`, `velero`, `Helm`, `jq`, `git` and `cloudctl` CLIs on the workstation machine, where you can access the OpenShift cluster, initiate and monitor the restoration of IBM Cloud Pak® for Multicloud Management.
-- If your environment has no access to Internet, you need to upload the `Nginx` image to all the worker nodes by following [Uploading the Nginx image in an air gap environment](../install/UploadNginxImageOnAirgap.md). The `Nginx` container is used to restore MongoDB that is running in the `ibm-common-services` namespace.
+- If your environment has no access to Internet, you need to upload the `Ubuntu` image to all the worker nodes by following [Uploading the Ubuntu image in an air gap environment](../install/UploadUbuntuImageOnAirgap.md). The `Ubuntu` container is used to restore MongoDB that is running in the `ibm-common-services` namespace.
 - All required storage classes must be created prior to the restore and storage classes must have the same name as the backup cluster.
 
 **Notes**
@@ -89,7 +89,7 @@ Where:
     2. Start the restoration process by running either of the following commands:
 
        ```
-       nohup bash restore.sh -a > restore.log & 
+       nohup bash restore.sh -a > restore.log &
        ```
        or 
 
@@ -163,7 +163,11 @@ Where:
    oc get pod -n ibm-common-services | grep -i icp-mongodb-restore
    ``` 
 
-2. Enable the Monitoring operator (`ibm-management-monitoring`) by updating IBM Cloud Pak for Multicloud Management `Installation` CR.
+3. Enable the Monitoring operator (`ibm-management-monitoring`) by running the following command:
+
+   ```
+   oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/1/enabled", "value": true }]'
+   ```
 
 ### 7. Restore Infrastructure Management
 
