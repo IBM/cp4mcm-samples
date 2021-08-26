@@ -81,3 +81,8 @@ All notable changes to this project will be documented in this file.
 - Updated the uninstall and cleanup scripts for ChatOps removal
   - `scripts/cp4mcm-cleanup-utility.sh`
   - `scripts/uninstall.sh`
+
+## [0.13.0] - 2021-08-26
+- Updated cp4mcm-ha-utility.sh script to support modules
+  - infrastructure-management-grc
+  - infrastructure-management-vm
