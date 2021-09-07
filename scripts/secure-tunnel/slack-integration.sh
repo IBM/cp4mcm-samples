@@ -10,7 +10,7 @@ RETRIES=60
 
 usage() {
    cat<<EOF
-   Before run this script make sure you have installed the oc and jq command line interface (CLI).
+   Before running this script, make sure you have installed the oc and jq command line interface (CLI).
 
 --aiops-cluster-login-string,               the AIOps cluster Log in string.
 --target-openshift-cluster-login-string,    the target OpenShift cluster log in string. It is used to create the Application mapping(port-forwarding) of the IBM Cloud Pak for Watson AIOps instance URL.
