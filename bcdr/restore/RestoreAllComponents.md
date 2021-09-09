@@ -15,7 +15,7 @@
 - The backup also backs up keys and certificates from the previous clusters. Ensure that the restored data is accessible in the new deployment. This restoration procedure works with the backup procedure in Backing up IBM Cloud Pak for Multicloud Management. Without backup, you can't run the restoration independently.
 - It is important to restore the backed-up data first for different components like Common Services, Monitoring, GRC, Vulnerability Advisor (VA), Mutation Advisor (MA), and Managed Services, and then deploy Common Services and IBM Cloud Pak for Multicloud Management operators. Otherwise, the restoration might not work.
 - It is highly recommended that the version of Common Services, Red Hat Advanced Cluster Management, and IBM Cloud Pak for Multicloud Management in restored cluster should be the same as the backup cluster.
-
+- The backup and restoration of Red Hat Advanced Cluster Management is managed independently of IBM Cloud Pak for Multicloud Management. Refer to [Red Hat Advanced Cluster Management documentation](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes) for backing up and restoring Red Hat Advanced Cluster Management observability service. When you install the Red Hat Advanced Cluster Management observability service during restoration, it is recommended to use the same S3 bucket that is used during the installation of observability service in the backup cluster.
 
 ## Procedure
 
@@ -208,3 +208,17 @@ This step needs to be done after RHACM and IBM Cloud Pak for Multicloud Manageme
 - If the restoration command fails with errors, run the same command again.
 - You need to designate <MANAGED_CLUSTER_NAMESPACE> with the namespace where the managed cluster is imported. If there are multiple managed cluster namespaces, add each namespace and separate them by commas. For example, `managed-cluster1-ns,managed-cluster2-ns,managed-cluster3-ns`.
 - You need to designate <DEPLOYED_APPLICATION_NAMESPACE> with the namespace where managed cluster application is deployed. If there are multiple application deployed namespaces, add each namespace and separate them by commas. For example, `app1-ns,app2-ns,app3-ns`.
+
+
+## Troubleshooting
+
+### 1. LDAP user login is not working after restore.
+
+Perform the following steps for LDAP user to login after restore:
+
+1. Login to the IBM Cloud Pak for Multicloud Management console using default admin credentials.
+2. From the navigation menu, select **Administer > Identify and access**.
+3. Select the ldap connection and click **Edit connection**.
+4. Click **Test connection**.
+5. Click **Save** once the connection is success.
+You can now retry to login using the ldap credentials.

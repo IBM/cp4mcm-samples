@@ -10,6 +10,7 @@
 - Common Services restore needs to be performed in a fresh cluster.
 - It is highly recommended that the version of Common Services, Red Hat Advanced Cluster Management, and IBM Cloud Pak for Multicloud Management in restored cluster should be the same as the backup cluster.
 - Monitoring or Managed Services restore needs to be performed when Common Services and IBM Cloud Pak for Multicloud Management operators are running.
+- The backup and restoration of Red Hat Advanced Cluster Management is managed independently of IBM Cloud Pak for Multicloud Management. Refer to [Red Hat Advanced Cluster Management documentation](https://access.redhat.com/documentation/en-us/red_hat_advanced_cluster_management_for_kubernetes) for backing up and restoring Red Hat Advanced Cluster Management observability service. When you install the Red Hat Advanced Cluster Management observability service during restoration, it is recommended to use the same S3 bucket that is used during the installation of observability service in the backup cluster.
 
 ## Procedure
 
@@ -179,3 +180,16 @@
    ```
    oc patch installations.orchestrator.management.ibm.com ibm-management -n <namespace in which IBM Cloud Pak for Multicloud Management is installed> --type='json' -p='[{"op": "replace", "path": "/spec/pakModules/0/config/3/enabled", "value": true }]'
    ```
+
+## Troubleshooting
+
+### 1. LDAP user login is not working after restore.
+
+Perform the following steps for LDAP user to login after restore:
+
+1. Login to the IBM Cloud Pak for Multicloud Management console using default admin credentials.
+2. From the navigation menu, select **Administer > Identify and access**.
+3. Select the ldap connection and click **Edit connection**.
+4. Click **Test connection**.
+5. Click **Save** once the connection is success.
+You can now retry to login using the ldap credentials.
