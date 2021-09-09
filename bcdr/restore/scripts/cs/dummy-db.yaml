@@ -16,19 +16,17 @@ metadata:
     app: dummy-db
 spec:
   containers:
-    - image: quay.io/bitnami/nginx:latest
-      securityContext:
-        runAsUser: 0
-        seLinuxOptions:
-             type: spc_t
-      name: nginx
+    - image: quay.io/libpod/ubuntu
+      command: ["sleep"]
+      args: ["infinity"]
+      name: ubuntu
       volumeMounts:
         - name: mongodump
           mountPath: "/dump"
       lifecycle:
-            postStart:
-              exec:
-                command: ["bash", "-c", "rm -rf /dump/.velero"]
+        postStart:
+          exec:
+            command: ["bash", "-c", "rm -rf /dump/.velero"]
   volumes:
     - name: mongodump
       persistentVolumeClaim:
