@@ -35,6 +35,8 @@ moduleAlias=""
 modules=(
     'mcm|MCM|ibm-management-mcm'
     'kong|Kong|ibm-management-kong'
+    'infrastructure-management-vm|IMVM|ibm-management-infra-vm'
+    'infrastructure-management-grc|IMGRC|ibm-management-infra-grc'
     'service-library|ServiceLibrary|ibm-management-service-library'
     'cam|CAM|ibm-management-cam-install'
     'hybridapp|HybridApp|ibm-management-hybridapp'
@@ -49,7 +51,7 @@ helpFunc() {
     echo "Use this script to enable or diable HA for IBM Cloud Pak for Multicloud Management"
     echo
     echo "  Flags:"
-    echo 
+    echo
     echo "     --kubeconfigPath                 The absolute path to the kubeconfig file to access the cluster. Use default kubeconfig if it is omitted"
     echo "     --list                           List the modules that support HA"
     echo "     --enable                         Enable HA for all modules, or a particular module if --module is specified"
@@ -67,7 +69,7 @@ helpFunc() {
     echo "     $0 --module ui --enable          Enable HA for one module"
     echo "     $0 --module ui --disable         Disable HA for one module"
     echo "     $0 --module ui --verify          Verify the results for one module"
-    echo 
+    echo
     exit 0
 }
 
@@ -123,7 +125,7 @@ checkKubeconfig() {
       echo "No file was found at ${pathToKubeconfig}; please use an absolute path to the kubeconfig for the cluster." | tee -a "$logpath"
       exit 1
     fi
-    
+
     $ocOrKubectl get pods --all-namespaces=true --kubeconfig="${pathToKubeconfig}" | grep "openshift" > /dev/null 2>&1
     local result=$?
     if [[ "${result}" -ne 0 ]]; then
@@ -209,6 +211,16 @@ enableHAForMCM() {
 enableHAForKong() {
     enableHAFor kube-system kong \
         kongs.management.ibm.com '/spec/replicaCount'
+}
+
+enableHAForIMVM() {
+    enableHAFor management-infrastructure-management infrastructure-management-vm \
+        infra-management-vm-operators.infra.management.ibm.com       '/spec/deployment/spec/replicas'
+}
+
+enableHAForIMGRC() {
+    enableHAFor management-infrastructure-management infrastructure-management-grc \
+        infra-management-grc-operators.infra.management.ibm.com       '/spec/deployment/spec/replicas'
 }
 
 enableHAForServiceLibrary() {
@@ -302,6 +314,8 @@ enableHAForAll() {
 
     enableHAForMCM
     enableHAForKong
+    enableHAForIMVM
+    enableHAForIMGRC
     enableHAForServiceLibrary
     enableHAForCAM
     enableHAForHybridApp
@@ -385,6 +399,14 @@ verifyHAForKong() {
     verifyHAFor kube-system kong deployment 'kong'
 }
 
+verifyHAForIMVM() {
+    verifyHAFor management-infrastructure-management infrastructure-management-vm deployment 'infra-management-vm-operator'
+}
+
+verifyHAForIMGRC() {
+    verifyHAFor management-infrastructure-management infrastructure-management-grc deployment 'infra-management-grc-operator'
+}
+
 verifyHAForServiceLibrary() {
     verifyHAFor management-infrastructure-management service-library deployment 'service-library'
 }
@@ -419,6 +441,8 @@ verifyHAForAll() {
 
     verifyHAForMCM
     verifyHAForKong
+    verifyHAForIMVM
+    verifyHAForIMGRC
     verifyHAForServiceLibrary
     verifyHAForCAM
     verifyHAForHybridApp
