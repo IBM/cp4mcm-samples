@@ -4,6 +4,7 @@ Follow the steps to back up IBM Cloud Pak® for Multicloud Management.
 
 ## Before you begin
 - You need to install the `kubectl`, `oc`, `velero`, `jq`, `git`, `docker` and `Helm` CLIs on a workstation machine, where you can access the OpenShift cluster, initiate and monitor the backup of IBM Cloud Pak® for Multicloud Management.
+- Workstation machine must have Linux base operating system and access to the internet.
 - If your environment has no access to Internet, you need to upload the `Ubuntu` image to all the worker nodes by following [Uploading the Ubuntu image in an air gap environment](../install/UploadUbuntuImageOnAirgap.md). The `Ubuntu` container is used to back up MongoDB that is running in the `ibm-common-services` namespace. 
 
 ## Procedure
