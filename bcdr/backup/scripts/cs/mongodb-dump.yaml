@@ -66,4 +66,4 @@ spec:
     resources:
       requests:
         storage: 20Gi
-    storageClassName: rook-cephfs
+    storageClassName: gp2
