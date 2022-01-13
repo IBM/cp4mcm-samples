@@ -58,6 +58,8 @@ spec:
   metadata:
     namespace: ibm-common-services
     name: my-mongodump
+    labels:
+      name: my-mongodump
   spec:
     accessModes:
       - ReadWriteOnce

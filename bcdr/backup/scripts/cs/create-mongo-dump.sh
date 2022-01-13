@@ -60,6 +60,35 @@ updateDummyDBFilePath() {
    fi
 }
 
+# Wait till deletion of resource
+waitTillDeletionComplete(){
+   namespace=$1
+   resourceLabel=$2
+   retryCount=$3
+   resourceType=$4
+   counter=0
+
+   resourceCount=$(kubectl get $resourceType -l $resourceLabel -n $namespace --no-headers | wc -l)
+   echo Resource count: $resourceCount, Resource type: $resourceType, Resource label: $resourceLabel
+
+   while [ $resourceCount -ne 0 ]; do
+      wait "5"
+      echo "Waiting for resource to be Deleted"
+
+      resourceCount=$(kubectl get $resourceType -l $resourceLabel -n $namespace --no-headers | wc -l)
+      echo Resource count: $resourceCount
+
+      counter=$((counter+1))
+      echo Counter: $counter, RetryCount: $retryCount
+
+      if [ $counter -eq $retryCount ]; then
+         echo "Exiting from waitTillDeletionComplete function as retryCount threshold achieved"
+         break
+      fi
+   done
+
+}
+
 # Check and update the dummy db file path
 updateDummyDBFilePath
 
@@ -68,7 +97,14 @@ kubectl apply -f $BASEDIR/mongo-image-policy.yaml
 kubectl apply -f $BASEDIR/nginx-image-policy.yaml
 
 kubectl delete -f $DUMMY_DB_FILE_PATH
+waitTillDeletionComplete "ibm-common-services" "app=dummy-db" "4" "pod"
 kubectl delete -f $BASEDIR/mongodb-dump.yaml
+waitTillDeletionComplete "ibm-common-services" "name=my-mongodump" "4" "pvc"
+pvcCount=$(kubectl get pvc -l name=my-mongodump -n ibm-common-services --no-headers | wc -l)
+if [ $pvcCount -ne 0 ]; then
+   kubectl delete pvc -l name=my-mongodump -n ibm-common-services --force
+   waitTillDeletionComplete "ibm-common-services" "name=my-mongodump" "4" "pvc"
+fi
 kubectl apply -f $BASEDIR/mongodb-dump.yaml
 checkResourceReadyness "ibm-common-services" "job-name=icp-mongodb-backup" "30" "job"
 
