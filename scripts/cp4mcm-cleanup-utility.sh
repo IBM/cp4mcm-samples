@@ -788,9 +788,9 @@ secretConfigmapFunc() {
     result=$(( result + $? ))
     deleteResource "secret" "kube-system" "ibm-management-pull-secret" "true" 300
     result=$(( result + $? ))
-	deleteResourceInGlobalNamespace "mutatingwebhookconfiguration" "image-admission-config" "true" 300
+    deleteResourceInGlobalNamespace "mutatingwebhookconfiguration" "image-admission-config" "true" 300
     result=$(( result + $? ))
-	deleteResourceInGlobalNamespace "validatingwebhookconfiguration" "image-admission-config" "true" 300
+    deleteResourceInGlobalNamespace "validatingwebhookconfiguration" "image-admission-config" "true" 300
     result=$(( result + $? ))
     if [[ "${result}" -ne 0 ]]; then
 	return 1
@@ -826,9 +826,9 @@ postUninstallFunc() {
     result=$(( result + $? ))
     deleteResource "secret" "kube-system" "ibm-management-pull-secret" "true" 300
     result=$(( result + $? ))
-	deleteResourceInGlobalNamespace "mutatingwebhookconfiguration" "image-admission-config" "true" 300
+    deleteResourceInGlobalNamespace "mutatingwebhookconfiguration" "image-admission-config" "true" 300
     result=$(( result + $? ))
-	deleteResourceInGlobalNamespace "validatingwebhookconfiguration" "image-admission-config" "true" 300
+    deleteResourceInGlobalNamespace "validatingwebhookconfiguration" "image-admission-config" "true" 300
     result=$(( result + $? ))
     #deleteCRDs
     #result=$(( result + $? ))
