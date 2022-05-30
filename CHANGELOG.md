@@ -86,3 +86,8 @@ All notable changes to this project will be documented in this file.
 - Updated cp4mcm-ha-utility.sh script to support modules
   - infrastructure-management-grc
   - infrastructure-management-vm
+
+## [0.14.0] - 2022-05-26
+- Updated cp4mcm-cleanup-utility.sh and uninstall.sh scripts to include commands to delete MutatingWebhookConfiguration and ValidatingWebhookConfiguration objects
+  - `scripts/cp4mcm-cleanup-utility.sh`
+  - `scripts/uninstall.sh`

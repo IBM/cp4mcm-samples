@@ -330,6 +330,51 @@ deleteResource() {
     return 0
 }
 
+deleteResourceInGlobalNamespace() {
+    resourceType=$1
+    resourceName=$2
+
+    if [[ "${resourceName}" == "" ]]; then
+	echo "The resourceName argument was null" >> $logpath
+	return 0
+    fi
+
+    $ocOrKubectl get "${resourceType}" "${resourceName}" --kubeconfig="${pathToKubeconfig}" > /dev/null 2>&1
+    local result=$?
+    if [[ "${result}" -ne 0 ]]; then
+	echo "${resourceType}: ${resourceName} does not exist; skipping deletion attempt" | tee -a "$logpath"
+	echo "" | tee -a "$logpath"
+	return 0
+    fi
+
+    echo "Deleting ${resourceType}: ${resourceName}" | tee -a "$logpath"
+    echo "" | tee -a "$logpath"
+    
+    $ocOrKubectl delete "${resourceType}" "${resourceName}" --force --grace-period=0 --kubeconfig="${pathToKubeconfig}" & >> $logpath
+    local result=$?
+    if [[ "${result}" -ne 0 ]]; then
+	return 1
+    fi
+
+    echo "" | tee -a "$logpath"
+
+    sleep 3s
+
+    $ocOrKubectl get "${resourceType}" "${resourceName}" --kubeconfig="${pathToKubeconfig}" > /dev/null 2>&1
+    local result=$?
+    if [[ "${result}" -ne 1 ]]; then
+	echo "Resource still exists; attempting to remove finalizers from resource" | tee -a "$logpath"
+	echo "" | tee -a "$logpath"
+	patchString='{"metadata":{"finalizers": []}}'
+	$ocOrKubectl patch "${resourceType}" "${resourceName}" -p "$patchString" --type=merge --kubeconfig="${pathToKubeconfig}" >> $logpath
+	local result=$?
+	if [[ "${result}" -ne 0 ]]; then
+	    return 1
+	fi
+    fi
+    return 0
+}
+
 
 deleteKind() {
     local kind=$1
@@ -743,6 +788,10 @@ secretConfigmapFunc() {
     result=$(( result + $? ))
     deleteResource "secret" "kube-system" "ibm-management-pull-secret" "true" 300
     result=$(( result + $? ))
+    deleteResourceInGlobalNamespace "mutatingwebhookconfiguration" "image-admission-config" "true" 300
+    result=$(( result + $? ))
+    deleteResourceInGlobalNamespace "validatingwebhookconfiguration" "image-admission-config" "true" 300
+    result=$(( result + $? ))
     if [[ "${result}" -ne 0 ]]; then
 	return 1
 	echo "Did not successfully complete secretConfigmapCleanup" | tee -a "$logpath"
@@ -776,6 +825,10 @@ postUninstallFunc() {
     deleteResource "secret" "openshift-operators" "ibm-management-pull-secret" "true" 300
     result=$(( result + $? ))
     deleteResource "secret" "kube-system" "ibm-management-pull-secret" "true" 300
+    result=$(( result + $? ))
+    deleteResourceInGlobalNamespace "mutatingwebhookconfiguration" "image-admission-config" "true" 300
+    result=$(( result + $? ))
+    deleteResourceInGlobalNamespace "validatingwebhookconfiguration" "image-admission-config" "true" 300
     result=$(( result + $? ))
     #deleteCRDs
     #result=$(( result + $? ))
