@@ -3,8 +3,8 @@ kind: PodSecurityPolicy
 metadata:
   name: "ua-operator"
 spec:
-  privileged: true
-  allowPrivilegeEscalation: true
+  privileged: false
+  allowPrivilegeEscalation: false
   allowedCapabilities:
   - '*'
   volumes:
@@ -29,7 +29,7 @@ kind: ServiceAccount
 metadata:
   name:  ua-cloud-monitoring
 imagePullSecrets:
-    - name: pull-secret-ua
+- name: pull-secret-ua
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -158,7 +158,6 @@ spec:
         runAsNonRoot: true
         runAsUser: 1001
       serviceAccountName: ua-cloud-monitoring      
-
       containers:
         - name: ua-operator
           image: REPLACE_WITH_YOUR_OPERATOR_IMAGE
@@ -242,7 +241,6 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
       serviceAccountName: ua-cloud-monitoring
-
       restartPolicy: OnFailure
       containers:
         - name: ua-crfiles
