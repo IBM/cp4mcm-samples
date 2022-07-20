@@ -91,3 +91,7 @@ All notable changes to this project will be documented in this file.
 - Updated cp4mcm-cleanup-utility.sh and uninstall.sh scripts to include commands to delete MutatingWebhookConfiguration and ValidatingWebhookConfiguration objects
   - `scripts/cp4mcm-cleanup-utility.sh`
   - `scripts/uninstall.sh`
+  
+## [0.15.0] - 2022-07-20
+- Updated cp4mcm-ha-utility.sh script to remove modules that have been removed in the base product (e.g. kong), are disabled and scheduled to be removed completely in FP6 (mcm), or did not have operands to begin with (infrastructure-management-vm, infrastructure-management-grc)
+  - `scripts/cp4mcm-ha-utility.sh`
