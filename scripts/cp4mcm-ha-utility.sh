@@ -33,10 +33,6 @@ moduleAlias=""
 
 # modules that support HA
 modules=(
-    'mcm|MCM|ibm-management-mcm'
-    'kong|Kong|ibm-management-kong'
-    'infrastructure-management-vm|IMVM|ibm-management-infra-vm'
-    'infrastructure-management-grc|IMGRC|ibm-management-infra-grc'
     'service-library|ServiceLibrary|ibm-management-service-library'
     'cam|CAM|ibm-management-cam-install'
     'hybridapp|HybridApp|ibm-management-hybridapp'
@@ -202,27 +198,6 @@ idOf() {
     done
 }
 
-enableHAForMCM() {
-    enableHAFor kube-system mcm \
-        mcmcores.management.ibm.com '/spec/global/replicas' \
-        kuis.management.ibm.com     '/spec/replicaCount'
-}
-
-enableHAForKong() {
-    enableHAFor kube-system kong \
-        kongs.management.ibm.com '/spec/replicaCount'
-}
-
-enableHAForIMVM() {
-    enableHAFor management-infrastructure-management infrastructure-management-vm \
-        infra-management-vm-operators.infra.management.ibm.com       '/spec/deployment/spec/replicas'
-}
-
-enableHAForIMGRC() {
-    enableHAFor management-infrastructure-management infrastructure-management-grc \
-        infra-management-grc-operators.infra.management.ibm.com       '/spec/deployment/spec/replicas'
-}
-
 enableHAForServiceLibrary() {
     enableHAFor management-infrastructure-management service-library \
         servicelibraryuis.servicelibraryui.management.ibm.com       '/spec/deployment/spec/replicas' \
@@ -312,10 +287,6 @@ enableHAForAll() {
     echo "Start to $operate HA for IBM Cloud Pak for Multicloud Management ..." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 
-    enableHAForMCM
-    enableHAForKong
-    enableHAForIMVM
-    enableHAForIMGRC
     enableHAForServiceLibrary
     enableHAForCAM
     enableHAForHybridApp
@@ -391,14 +362,6 @@ verifyHAFor() {
     echo "" | tee -a "$logpath"
 }
 
-verifyHAForMCM() {
-    verifyHAFor kube-system mcm deployment 'multicluster\|mcm-operator\|kui' statefulset 'multicluster' --exclude 'ui'
-}
-
-verifyHAForKong() {
-    verifyHAFor kube-system kong deployment 'kong'
-}
-
 verifyHAForIMVM() {
     verifyHAFor management-infrastructure-management infrastructure-management-vm deployment 'infra-management-vm-operator'
 }
@@ -439,10 +402,6 @@ verifyHAForAll() {
     echo "Start to $operate HA for IBM Cloud Pak for Multicloud Management ..." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 
-    verifyHAForMCM
-    verifyHAForKong
-    verifyHAForIMVM
-    verifyHAForIMGRC
     verifyHAForServiceLibrary
     verifyHAForCAM
     verifyHAForHybridApp
