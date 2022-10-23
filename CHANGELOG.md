@@ -91,3 +91,7 @@ All notable changes to this project will be documented in this file.
 - Updated cp4mcm-cleanup-utility.sh and uninstall.sh scripts to include commands to delete MutatingWebhookConfiguration and ValidatingWebhookConfiguration objects
   - `scripts/cp4mcm-cleanup-utility.sh`
   - `scripts/uninstall.sh`
+  
+## [0.15.0] - 2022-10-22
+- Updated cp4mcm-ha-utility.sh by removing everything that dealt with removed operands for CP4MCM 2.3 FP6
+  - `scripts/cp4mcm-ha-utility.sh`
