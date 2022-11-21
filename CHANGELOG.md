@@ -92,6 +92,7 @@ All notable changes to this project will be documented in this file.
   - `scripts/cp4mcm-cleanup-utility.sh`
   - `scripts/uninstall.sh`
   
-## [0.15.0] - 2022-10-22
+## [0.15.0] - 2022-11-21
 - Updated cp4mcm-ha-utility.sh by removing everything that dealt with removed operands for CP4MCM 2.3 FP6
+- Added function to delete sre clusterrole and clusterrolebinding
   - `scripts/cp4mcm-ha-utility.sh`
