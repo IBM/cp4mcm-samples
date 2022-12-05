@@ -28,14 +28,14 @@ spec:
         productMetric: "MANAGED_VIRTUAL_SERVER"
         productChargedContainers: "All"
         productCloudpakRatio: "1:1"
-        olm.relatedImage.autconfigoperator: cp.icr.io/cp/cp4mcm/ibm-dc-autoconfig-operator@sha256:c769dc0908d9cc413fe8360705a783b9f21e2bfe706719f25afcfe73a1124c21
-        olm.relatedImage.k8monitor: cp.icr.io/cp/cp4mcm/k8-monitor@sha256:39b992b48e1273496fad5944f14a16b7a8a126c43cd2bbacdb1f7fe4f8eb7b66
-        olm.relatedImage.k8operator: cp.icr.io/cp/cp4mcm/k8sdc-operator@sha256:819ad4e01d91229b36cbbbb45790a1adefaa0f812ba4a22992226d58a5454f7a
-        olm.relatedImage.reloader: cp.icr.io/cp/cp4mcm/reloader@sha256:2ddce2d315dfcb9dbd4a7a4c2eb3df0fa842ee17ca5dacafe848265a3ebefa16
-        olm.relatedImage.uacloud: cp.icr.io/cp/cp4mcm/ua-cloud-monitoring@sha256:48a771a9787b8071c3dc80e60260d95d6afe8c3314cfa7dc4c1a9453b2c86f07
-        olm.relatedImage.uaoperator: cp.icr.io/cp/cp4mcm/ua-operator@sha256:7bf8c312f8915880cc691b71ee8bccb5bad26e8b75986094558563e895218626
-        olm.relatedImage.uaplugins: cp.icr.io/cp/cp4mcm/ua-plugins@sha256:90f68c20beac3836ea3df3536d09be43feea019469054ff75b902da5d108448a
-        olm.relatedImage.uarepo: cp.icr.io/cp/cp4mcm/ua-repo@sha256:b9c5bac67bb2c7775c3e4503185fcd4d138fde71af74913875249698d661d763
+        olm.relatedImage.autconfigoperator: cp.icr.io/cp/cp4mcm/ibm-dc-autoconfig-operator@sha256:b3ecb5920daaa08009111c3ba303dae1a8f0919de7a2b6919e09b9a3a01e7a55
+        olm.relatedImage.k8monitor: cp.icr.io/cp/cp4mcm/k8-monitor@sha256:bde6cb952fded7a143de56b3931651a171cd95d85096dd9bd12656e2234aa442
+        olm.relatedImage.k8operator: cp.icr.io/cp/cp4mcm/k8sdc-operator@sha256:f04707be1fd0155405660948a19a5f7dd752ad8e645d91c433f17be9d0763d72
+        olm.relatedImage.reloader: cp.icr.io/cp/cp4mcm/reloader@sha256:3d3942ed5bd4813598eb1940aa2f2cc23e99768394c7da2c7efd6ec196f0b704
+        olm.relatedImage.uacloud: cp.icr.io/cp/cp4mcm/ua-cloud-monitoring@sha256:71e8ddc8ed82d09e78c2d9b475572194a0ae032904c759b9ef553a0b2940e733
+        olm.relatedImage.uaoperator: cp.icr.io/cp/cp4mcm/ua-operator@sha256:12ad6a21e2018fbb1ad0f9a5acb1735a48a6ab9c25e29142a9a764cc2afe3449
+        olm.relatedImage.uaplugins: cp.icr.io/cp/cp4mcm/ua-plugins@sha256:7a741e979be05a146a6eb50601859a6f87f9e768a16e9f691ca19f6990b57fae
+        olm.relatedImage.uarepo: cp.icr.io/cp/cp4mcm/ua-repo@sha256:102f916534fd7d915e2ee0e25cd59bb9413a2aa5887e1b1ce8df04728070f827
     spec:
       serviceAccountName: ibm-monitoring-dataprovider-mgmt-operator
       hostNetwork: false
@@ -58,7 +58,7 @@ spec:
       containers:
         - name: operator
           # Replace this with the built image name
-          image: cp.icr.io/cp/cp4mcm/ibm-monitoring-dataprovider-mgmt-operator@sha256:c5e4a2cc6b8f040a167a5a8062674600858a82b9730996d6769d513a69765c80
+          image: cp.icr.io/cp/cp4mcm/ibm-monitoring-dataprovider-mgmt-operator@sha256:3a603cda2c6af31655b0bdf9062d3c99e32653b474ad9b20cdf4264fd92ae64f
           imagePullPolicy: "IfNotPresent"
           volumeMounts:
           - mountPath: /tmp/ansible-operator/runner
