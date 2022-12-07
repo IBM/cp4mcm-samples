@@ -738,7 +738,7 @@ removeMisc() {
     deleteResource "InstallPlan" "openshift-operators" "${orchestratorInstallPlan}" "false" 300
     result=$(( result + $? ))
     hybridappInstallPlan=`oc get InstallPlan -n openshift-operators | grep "ibm-management-hybridapp" | awk '{ print $1 }'`
-    deleteResource "InstallPlan" "openshift-operators" "${hybridappInstallPlan}" "false" 300
+    deleteResource "InstallPlan" "openshift-operators" "${hybridappInstallPlan}" "false" 300    
     result=$(( result + $? ))
     if [[ "${result}" -eq 0 ]]; then
 	echo "All remaining miscellaneous resources related to CP4MCM have been removed" | tee -a "$logpath"
@@ -748,6 +748,17 @@ removeMisc() {
 	return 0
     fi
 }
+
+removeSreClusterRole() {
+    oc get clusterrole | grep 'sre' | awk '{ print $1 }' | while read -r line ; do
+	oc delete clusterrole $line
+    done
+
+    oc get clusterrolebinding | grep 'sre' | awk '{ print $1 }' | while read -r line ; do
+	oc delete clusterrolebinding $line
+    done
+}
+
 
 
 deleteRoute(){
@@ -830,6 +841,7 @@ postUninstallFunc() {
     result=$(( result + $? ))
     deleteResourceInGlobalNamespace "validatingwebhookconfiguration" "image-admission-config" "true" 300
     result=$(( result + $? ))
+    removeSreClusterRole
     #deleteCRDs
     #result=$(( result + $? ))
     if [[ "${result}" -ne 0 ]]; then
