@@ -33,17 +33,11 @@ moduleAlias=""
 
 # modules that support HA
 modules=(
-    'mcm|MCM|ibm-management-mcm'
-    'kong|Kong|ibm-management-kong'
     'infrastructure-management-vm|IMVM|ibm-management-infra-vm'
-    'infrastructure-management-grc|IMGRC|ibm-management-infra-grc'
     'service-library|ServiceLibrary|ibm-management-service-library'
     'cam|CAM|ibm-management-cam-install'
     'hybridapp|HybridApp|ibm-management-hybridapp'
-    'manage-runtime|ManageRuntime|ibm-management-manage-runtime'
     'ui|UI|ibm-management-ui'
-    'notary|Notary|ibm-management-notary'
-    'image-security-enforcement|ImageSecurityEnforcement|ibm-management-image-security-enforcement'
 )
 
 helpFunc() {
@@ -202,26 +196,10 @@ idOf() {
     done
 }
 
-enableHAForMCM() {
-    enableHAFor kube-system mcm \
-        mcmcores.management.ibm.com '/spec/global/replicas' \
-        kuis.management.ibm.com     '/spec/replicaCount'
-}
-
-enableHAForKong() {
-    enableHAFor kube-system kong \
-        kongs.management.ibm.com '/spec/replicaCount'
-}
-
 enableHAForIMVM() {
-    enableHAFor management-infrastructure-management infrastructure-management-vm \
-        infra-management-vm-operators.infra.management.ibm.com       '/spec/deployment/spec/replicas'
+    enableHAFor management-infrastructure-management infrastructure-management-vm 
 }
 
-enableHAForIMGRC() {
-    enableHAFor management-infrastructure-management infrastructure-management-grc \
-        infra-management-grc-operators.infra.management.ibm.com       '/spec/deployment/spec/replicas'
-}
 
 enableHAForServiceLibrary() {
     enableHAFor management-infrastructure-management service-library \
@@ -242,10 +220,6 @@ enableHAForHybridApp() {
         operators.deploy.hybridapp.io '/spec/replicas'
 }
 
-enableHAForManageRuntime() {
-    enableHAFor kube-system manage-runtime
-}
-
 enableHAForUI() {
     enableHAFor kube-system ui \
         consoleuis.consoleui.management.ibm.com         '/spec/replicas' \
@@ -253,17 +227,6 @@ enableHAForUI() {
         grcuis.grcui.management.ibm.com                 '/spec/replicas' \
         grcuiapis.grcuiapi.management.ibm.com           '/spec/replicas' \
         consoleuiapis.consoleuiapi.management.ibm.com   '/spec/replicas'
-}
-
-enableHAForNotary() {
-    enableHAFor management-security-services notary \
-        notaries.notary.management.ibm.com '/spec/notaryServer/replicaCount' \
-        notaries.notary.management.ibm.com '/spec/notarySigner/replicaCount'
-}
-
-enableHAForImageSecurityEnforcement() {
-    enableHAFor management-security-services image-security-enforcement \
-        imagesecurityenforcement '/spec/replicaCount'
 }
 
 replicasOf() {
@@ -312,17 +275,11 @@ enableHAForAll() {
     echo "Start to $operate HA for IBM Cloud Pak for Multicloud Management ..." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 
-    enableHAForMCM
-    enableHAForKong
     enableHAForIMVM
-    enableHAForIMGRC
     enableHAForServiceLibrary
     enableHAForCAM
     enableHAForHybridApp
-    enableHAForManageRuntime
     enableHAForUI
-    enableHAForNotary
-    enableHAForImageSecurityEnforcement
 
     echo "All changes have been applied to $operate HA for IBM Cloud Pak for Multicloud Management." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
@@ -391,20 +348,8 @@ verifyHAFor() {
     echo "" | tee -a "$logpath"
 }
 
-verifyHAForMCM() {
-    verifyHAFor kube-system mcm deployment 'multicluster\|mcm-operator\|kui' statefulset 'multicluster' --exclude 'ui'
-}
-
-verifyHAForKong() {
-    verifyHAFor kube-system kong deployment 'kong'
-}
-
 verifyHAForIMVM() {
     verifyHAFor management-infrastructure-management infrastructure-management-vm deployment 'infra-management-vm-operator'
-}
-
-verifyHAForIMGRC() {
-    verifyHAFor management-infrastructure-management infrastructure-management-grc deployment 'infra-management-grc-operator'
 }
 
 verifyHAForServiceLibrary() {
@@ -419,37 +364,19 @@ verifyHAForHybridApp() {
     verifyHAFor openshift-operators hybridapp deployment 'ibm.*hybridapp' replicaset 'cp4mcm-hybridapp'
 }
 
-verifyHAForManageRuntime() {
-    verifyHAFor kube-system manage-runtime deployment 'manage-runtime'
-}
-
 verifyHAForUI() {
     verifyHAFor kube-system ui deployment 'multicluster\|mcm-ui-operator' --include 'ui'
-}
-
-verifyHAForNotary() {
-    verifyHAFor management-security-services notary deployment 'notary'
-}
-
-verifyHAForImageSecurityEnforcement() {
-    verifyHAFor management-security-services image-security-enforcement deployment 'image.*enforcement'
 }
 
 verifyHAForAll() {
     echo "Start to $operate HA for IBM Cloud Pak for Multicloud Management ..." | tee -a "$logpath"
     echo "" | tee -a "$logpath"
 
-    verifyHAForMCM
-    verifyHAForKong
     verifyHAForIMVM
-    verifyHAForIMGRC
     verifyHAForServiceLibrary
     verifyHAForCAM
     verifyHAForHybridApp
-    verifyHAForManageRuntime
     verifyHAForUI
-    verifyHAForNotary
-    verifyHAForImageSecurityEnforcement
 }
 
 # end core stuff
