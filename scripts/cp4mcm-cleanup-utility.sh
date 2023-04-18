@@ -695,6 +695,7 @@ deleteSecrets() {
 	"sre-inventory-inventory-rhacm-redisgraph-user-secrets"
 	"sre-inventory-redisgraph-secrets"
 	"sre-inventory-redisgraph-user-secrets"
+	"sre-inventory-redisgraph-user-conf-secrets"
 	"sre-inventory-search-api-secrets"
 	"sre-postgresql-bastion-secret"
 	"sre-postgresql-vault-secret"
