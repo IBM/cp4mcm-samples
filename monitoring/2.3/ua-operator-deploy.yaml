@@ -1,29 +1,3 @@
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  name: "ua-operator"
-spec:
-  privileged: false
-  allowPrivilegeEscalation: false
-  allowedCapabilities:
-  - '*'
-  volumes:
-  - '*'
-  hostNetwork: true
-  hostPorts:
-  - min: 0
-    max: 65535
-  hostIPC: true
-  hostPID: true
-  runAsUser:
-    rule: 'RunAsAny'
-  seLinux:
-    rule: 'RunAsAny'
-  supplementalGroups:
-    rule: 'RunAsAny'
-  fsGroup:
-    rule: 'RunAsAny'
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -46,14 +20,6 @@ rules:
   - '*'
   verbs:
   - '*'
-- apiGroups:
-  - extensions
-  resourceNames:
-  - "ua-operator"
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

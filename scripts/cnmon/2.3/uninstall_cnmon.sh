@@ -309,15 +309,6 @@ for i in "${clusterrole[@]}"; do
   kubectl delete clusterrole $i
 done
 
-echo "Search and deleting podsecuritypolicy..."
-podsecuritypolicy=$(kubectl get podsecuritypolicy ua-operator --no-headers=true --ignore-not-found=true | awk '{print $1}')
-if [ -z "$podsecuritypolicy" ]
-then
-  echo "No related podsecuritypolicy found."
-else
-  kubectl delete podsecuritypolicy $podsecuritypolicy
-fi
-
 echo ""
 if [ ! $nscnt -eq 0 -a $keep_uacr = false -a "$namespace" != "management-monitoring" ]
 then

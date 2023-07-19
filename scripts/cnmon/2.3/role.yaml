@@ -17,9 +17,3 @@ rules:
   - '*'
   verbs:
   - '*'
-- apiGroups:
-  - extensions
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
