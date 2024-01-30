@@ -32,14 +32,15 @@ function install_header_on_signle_node () {
     echo "Start to install kernel headers on the node $nodename."
     echo ""
 
-    debug_pod=`oc debug node/${nodename} -o json`
-    namespace=`echo -e "${debug_pod}" | jq -r .metadata.namespace`
-    name=`echo -e "${debug_pod}" | jq -r .metadata.name`
-    echo $namespace
-    echo $name
+    # debug_pod=`oc debug node/${nodename} -o json`
+    # namespace=`echo -e "${debug_pod}" | jq -r .metadata.namespace`
+    # name=`echo -e "${debug_pod}" | jq -r .metadata.name`
+    namespace="openshift-debug-kernel"
+    name="${nodename//./}-debug"
     echo ""
+    oc create ns ${namespace}
 
-    nohup bash -c "oc debug ${image_option} ${debug_image} node/${nodename} --no-tty=true -- sleep 600" > /dev/null &
+    nohup bash -c "oc debug ${image_option} ${debug_image} node/${nodename} --to-namespace=${namespace} --no-tty=true -- sleep 600" > /dev/null &
     wait_until_running ${namespace} ${name}
     oc cp -n ${namespace} ${rpm_file_path} ${name}:/host/etc/${rpm_file_name}
     oc exec -it -n ${namespace} ${name} -- bash -c "chroot /host bash -c \"
@@ -67,13 +68,13 @@ fi
 ###########################################
 
 bash -c 'cat > /etc/fstab << END
-overlay /usr/src/kernels overlay lowerdir=/usr/src/kernels,upperdir=/opt/kernels,workdir=/opt/kernels.wd,nofail 0 0
+overlay /usr/src/kernels overlay lowerdir=/usr/src/kernels,upperdir=/etc/usr/src/kernels,workdir=/etc/usr/src/kernels.wd,nofail 0 0
 END'
 
-sudo mkdir -p /opt/kernels /opt/kernels.wd
-sudo mount -o lowerdir=/usr/src/kernels,upperdir=/opt/kernels,workdir=/opt/kernels.wd -t overlay overlay /usr/src/kernels
-sudo mkdir -p /opt/modules /opt/modules.wd
-sudo mount -o lowerdir=/lib/modules,upperdir=/opt/modules,workdir=/opt/modules.wd -t overlay overlay /lib/modules
+sudo mkdir -p /etc/usr/src/kernels /etc/usr/src/kernels.wd
+sudo mount -o lowerdir=/usr/src/kernels,upperdir=/etc/usr/src/kernels,workdir=/etc/usr/src/kernels.wd -t overlay overlay /usr/src/kernels
+sudo mkdir -p /etc/usr/share/rpm /etc/usr/share/rpm.wd
+sudo mount -o lowerdir=/usr/share/rpm,upperdir=/etc/usr/share/rpm,workdir=/etc/usr/share/rpm.wd -t overlay overlay /usr/share/rpm
 
 sudo setenforce 0
 
@@ -91,6 +92,7 @@ if [[ ! -d \\\\\\\$kernel_header_dir ]]; then
     echo Extracting files from rpm...
     if [[ -f /etc/${rpm_file_name} ]] ; then
         rpm2cpio /etc/${rpm_file_name} | cpio -id
+        rpm -i /etc/${rpm_file_name}
     fi
 
     if [[ -d \\\\\\\$kernel_header_dir ]]; then
@@ -143,6 +145,7 @@ fi
 echo \$?
 " 2>&1 | tee /tmp/ma-install-kernel.log # end of oc debug
     oc delete pod -n ${namespace} ${name}
+    oc delete namespace ${namespace}
     ret_val=`cat /tmp/ma-install-kernel.log | tail -n 1 | sed 's/[^0-9]*//g'`
     rm /tmp/ma-install-kernel.log
     return $ret_val
