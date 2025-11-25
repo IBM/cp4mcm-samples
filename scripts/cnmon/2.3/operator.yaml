@@ -28,7 +28,7 @@ spec:
         productMetric: "MANAGED_VIRTUAL_SERVER"
         productChargedContainers: "All"
         productCloudpakRatio: "1:1"
-        olm.relatedImage.autconfigoperator: cp.icr.io/cp/cp4mcm/ibm-dc-autoconfig-operator@sha256:78c58a525047ec0273fe16353d8111929a6d2cd6e2b850aa4d15c5b832c898f8
+        olm.relatedImage.autconfigoperator: cp.icr.io/cp/cp4mcm/ibm-dc-autoconfig-operator@sha256:f695ac193ca409104c66dda8700b15a4eaf9dac34648c529304a4cf01cd764e3
         olm.relatedImage.k8monitor: cp.icr.io/cp/cp4mcm/k8-monitor@sha256:ed94cb81d5e7719cf6cb51b49176ad393d0d7f30ceb380ac5e8eb7298d3fad49
         olm.relatedImage.k8operator: cp.icr.io/cp/cp4mcm/k8sdc-operator@sha256:59b0348bb54284afc5e2ac922683de3b8f2bd77c6836111efaa75e146ff0be17
         olm.relatedImage.reloader: cp.icr.io/cp/cp4mcm/reloader@sha256:72feea7ebd0f6710ffd82cf2c4dfe4612a4221663f6abb09cd93e7303d06fd44
